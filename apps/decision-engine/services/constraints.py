@@ -1,0 +1,79 @@
+import math
+from typing import List, Dict, Any
+
+VESSEL_CLASSES = [
+    {"id": "handy", "code": "HANDY", "name": "Handysize Bulk Carrier", "capacity": 28000, "draft": 10.2, "length": 170.0, "cost_per_day": 12500},
+    {"id": "handymax", "code": "HANDYMAX", "name": "Handymax Bulk Carrier", "capacity": 45000, "draft": 11.5, "length": 190.0, "cost_per_day": 15000},
+    {"id": "supra", "code": "SUPRA", "name": "Supramax / Ultramax", "capacity": 58000, "draft": 12.8, "length": 200.0, "cost_per_day": 18500},
+    {"id": "panamax", "code": "PANAMAX", "name": "Kamsarmax / Panamax", "capacity": 76500, "draft": 14.2, "length": 225.0, "cost_per_day": 22000},
+    {"id": "cape", "code": "CAPE", "name": "Capesize Heavy Bulk", "capacity": 180000, "draft": 18.5, "length": 295.0, "cost_per_day": 35000}
+]
+
+def evaluate_vessel_constraints(
+    cargo_quantity_mt: float,
+    origin_draft_m: float,
+    origin_length_m: float,
+    dest_draft_m: float,
+    dest_length_m: float,
+    dest_handling_mt_per_day: float,
+    forecasted_base_rate: float
+) -> Dict[str, List[Dict[str, Any]]]:
+    
+    min_permissible_draft = min(origin_draft_m, dest_draft_m)
+    min_permissible_length = min(origin_length_m, dest_length_m)
+
+    feasible = []
+    rejected = []
+
+    for v in VESSEL_CLASSES:
+        rejection_reasons = []
+
+        if v['draft'] > min_permissible_draft:
+            rejection_reasons.append(
+                f"Draft Violation: Vessel draft {v['draft']}m exceeds port max draft constraint {min_permissible_draft}m"
+            )
+
+        if v['length'] > min_permissible_length:
+            rejection_reasons.append(
+                f"LOA Violation: Vessel length {v['length']}m exceeds port max LOA length {min_permissible_length}m"
+            )
+
+        voyages_needed = math.ceil(cargo_quantity_mt / v['capacity'])
+        turnaround_days = round(math.ceil(cargo_quantity_mt / dest_handling_mt_per_day) + 0.5, 1)
+
+        # Rate scaling for larger vs smaller vessels
+        scale_factor = 1.0
+        if v['code'] == 'CAPE':
+            scale_factor = 0.65
+        elif v['code'] == 'PANAMAX':
+            scale_factor = 0.85
+        elif v['code'] == 'HANDY':
+            scale_factor = 1.25
+
+        effective_rate = forecasted_base_rate * scale_factor
+        est_cost_usd = round(cargo_quantity_mt * effective_rate + (turnaround_days * v['cost_per_day']), 2)
+
+        record = {
+            "vesselTypeId": v['id'],
+            "vesselTypeName": v['name'],
+            "vesselCode": v['code'],
+            "isFeasible": len(rejection_reasons) == 0,
+            "draftM": v['draft'],
+            "lengthM": v['length'],
+            "requiredVoyagesCount": voyages_needed,
+            "estimatedTurnaroundDays": turnaround_days,
+            "estimatedCostUsd": est_cost_usd
+        }
+
+        if len(rejection_reasons) == 0:
+            feasible.append(record)
+        else:
+            record["rejectionReason"] = " | ".join(rejection_reasons)
+            rejected.append(record)
+
+    # Rank feasible options by total estimated cost
+    feasible.sort(key=lambda x: x['estimatedCostUsd'])
+    for idx, f in enumerate(feasible):
+        f['rank'] = idx + 1
+
+    return {"feasible": feasible, "rejected": rejected}

@@ -1,0 +1,84 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function getUserRole() {
+      return request.auth.token.role;
+    }
+
+    function isOrgMember(orgId) {
+      return isAuthenticated() && (request.auth.token.orgId == orgId || resource == null || resource.data.orgId == orgId);
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && getUserRole() == 'ADMIN';
+    }
+
+    function isManager() {
+      return isAuthenticated() && (getUserRole() == 'PROCUREMENT_MANAGER' || isAdmin());
+    }
+
+    function isAnalyst() {
+      return isAuthenticated() && (getUserRole() == 'ANALYST' || isManager());
+    }
+
+    // Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Organizations collection
+    match /organizations/{orgId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Users collection
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin() || request.auth.uid == userId;
+    }
+
+    // Ports collection
+    match /ports/{portId} {
+      allow read: if isAuthenticated();
+      allow write: if isManager();
+    }
+
+    // Vessel Types collection
+    match /vesselTypes/{vtId} {
+      allow read: if isAuthenticated();
+      allow write: if isManager();
+    }
+
+    // Procurement Requests & Optimization Subcollection
+    match /procurementRequests/{reqId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isManager();
+      allow delete: if isAdmin();
+
+      match /optimizationRuns/{runId} {
+        allow read: if isAuthenticated();
+        allow write: if isManager();
+      }
+    }
+
+    // Freight Rates collection
+    match /freightRates/{rateId} {
+      allow read: if isAuthenticated();
+      allow write: if isAnalyst();
+    }
+
+    // Audit Logs collection
+    match /auditLogs/{logId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if false; // Immutable audit log
+    }
+  }
+}

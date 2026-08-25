@@ -1,0 +1,363 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Organization {
+  id                  String               @id @default(uuid())
+  name                String
+  code                String               @unique
+  type                String
+  createdAt           DateTime             @default(now()) @map("created_at")
+  updatedAt           DateTime             @updatedAt @map("updated_at")
+  users               User[]
+  procurementRequests ProcurementRequest[]
+  dataImportJobs      DataImportJob[]
+
+  @@map("organizations")
+}
+
+model User {
+  id             String         @id @default(uuid())
+  email          String         @unique
+  passwordHash   String         @map("password_hash")
+  fullName       String         @map("full_name")
+  role           String         @default("VIEWER")
+  organizationId String         @map("organization_id")
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  refreshToken   String?        @map("refresh_token")
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+  auditLogs      AuditLog[]
+  dataImportJobs DataImportJob[]
+
+  @@map("users")
+}
+
+model Port {
+  id                       String               @id @default(uuid())
+  name                     String
+  code                     String               @unique
+  country                  String
+  latitude                 Float
+  longitude                Float
+  maxDraftM                Float                @map("max_draft_m")
+  maxLengthM               Float                @map("max_length_m")
+  handlingCapacityMtPerDay Float                @map("handling_capacity_mt_per_day")
+  storageCapacityMt        Float                @map("storage_capacity_mt")
+  avgTurnaroundDays        Float                @map("avg_turnaround_days")
+  createdAt                DateTime             @default(now()) @map("created_at")
+  updatedAt                DateTime             @updatedAt @map("updated_at")
+  originFreightRates       FreightRate[]        @relation("OriginPort")
+  destFreightRates         FreightRate[]        @relation("DestinationPort")
+  originCargoes            Cargo[]              @relation("OriginCargoPort")
+  destCargoes              Cargo[]              @relation("DestinationCargoPort")
+  originProcurement        ProcurementRequest[] @relation("OriginProcurementPort")
+  destProcurement          ProcurementRequest[] @relation("DestinationProcurementPort")
+  originRoutes             Route[]              @relation("OriginRoutePort")
+  destRoutes               Route[]              @relation("DestinationRoutePort")
+
+  @@map("ports")
+}
+
+model VesselType {
+  id                  String        @id @default(uuid())
+  code                String        @unique
+  name                String
+  capacityMinMt       Float         @map("capacity_min_mt")
+  capacityMaxMt       Float         @map("capacity_max_mt")
+  draftM              Float         @map("draft_m")
+  lengthM             Float         @map("length_m")
+  beamM               Float         @map("beam_m")
+  avgSpeedKnots       Float         @map("avg_speed_knots")
+  operatingCostPerDay Float         @map("operating_cost_per_day")
+  createdAt           DateTime      @default(now()) @map("created_at")
+  updatedAt           DateTime      @updatedAt @map("updated_at")
+  vessels             Vessel[]
+  freightRates        FreightRate[]
+
+  @@map("vessel_types")
+}
+
+model Vessel {
+  id           String     @id @default(uuid())
+  name         String
+  imoNumber    String     @unique @map("imo_number")
+  vesselTypeId String     @map("vessel_type_id")
+  vesselType   VesselType @relation(fields: [vesselTypeId], references: [id], onDelete: Cascade)
+  capacityMt   Float      @map("capacity_mt")
+  draftM       Float      @map("draft_m")
+  speedKnots   Float      @map("speed_knots")
+  status       String     @default("AVAILABLE")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+  voyages      Voyage[]
+
+  @@map("vessels")
+}
+
+model Cargo {
+  id                String   @id @default(uuid())
+  commodity         String
+  quantityMt        Float    @map("quantity_mt")
+  originPortId      String   @map("origin_port_id")
+  originPort        Port     @relation("OriginCargoPort", fields: [originPortId], references: [id])
+  destinationPortId String   @map("destination_port_id")
+  destinationPort   Port     @relation("DestinationCargoPort", fields: [destinationPortId], references: [id])
+  laycanStartDate   DateTime @map("laycan_start_date")
+  laycanEndDate     DateTime @map("laycan_end_date")
+  maxMoisturePct    Float?   @map("max_moisture_pct")
+  maxAshPct         Float?   @map("max_ash_pct")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@map("cargo")
+}
+
+model Route {
+  id                String   @id @default(uuid())
+  originPortId      String   @map("origin_port_id")
+  originPort        Port     @relation("OriginRoutePort", fields: [originPortId], references: [id])
+  destinationPortId String   @map("destination_port_id")
+  destinationPort   Port     @relation("DestinationRoutePort", fields: [destinationPortId], references: [id])
+  distanceNauticalM Float    @map("distance_nautical_m")
+  ecaZonesEnRoute   Boolean  @default(false) @map("eca_zones_en_route")
+  piracyRiskZone    Boolean  @default(false) @map("piracy_risk_zone")
+  canalTransit      String?  @map("canal_transit")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@map("routes")
+}
+
+model FreightRate {
+  id                String     @id @default(uuid())
+  originPortId      String     @map("origin_port_id")
+  originPort        Port       @relation("OriginPort", fields: [originPortId], references: [id])
+  destinationPortId String     @map("destination_port_id")
+  destinationPort   Port       @relation("DestinationPort", fields: [destinationPortId], references: [id])
+  vesselTypeId      String     @map("vessel_type_id")
+  vesselType        VesselType @relation(fields: [vesselTypeId], references: [id])
+  cargoType         String     @map("cargo_type")
+  rateUsdPerMt      Float      @map("rate_usd_per_mt")
+  rateDate          DateTime   @map("rate_date")
+  createdAt         DateTime   @default(now()) @map("created_at")
+  updatedAt         DateTime   @updatedAt @map("updated_at")
+
+  @@index([originPortId, destinationPortId, rateDate])
+  @@index([vesselTypeId, rateDate])
+  @@map("freight_rates")
+}
+
+model MarketData {
+  id         String   @id @default(uuid())
+  indexName  String   @map("index_name")
+  indexValue Float    @map("index_value")
+  changePct  Float    @map("change_pct")
+  reportDate DateTime @map("report_date")
+  source     String
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@index([indexName, reportDate])
+  @@map("market_data")
+}
+
+model CommodityPrice {
+  id              String   @id @default(uuid())
+  commodityName   String   @map("commodity_name")
+  benchmarkMarket String   @map("benchmark_market")
+  priceUsdPerMt   Float    @map("price_usd_per_mt")
+  priceDate       DateTime @map("price_date")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@index([commodityName, priceDate])
+  @@map("commodity_prices")
+}
+
+model ForecastModel {
+  id        String     @id @default(uuid())
+  modelName String     @map("model_name")
+  algorithm String
+  accuracy  Float
+  status    String
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+  forecasts Forecast[]
+
+  @@map("forecast_models")
+}
+
+model Forecast {
+  id              String        @id @default(uuid())
+  forecastModelId String        @map("forecast_model_id")
+  forecastModel   ForecastModel @relation(fields: [forecastModelId], references: [id])
+  targetRoute     String        @map("target_route")
+  predictedRate   Float         @map("predicted_rate")
+  confidenceLower Float         @map("confidence_lower")
+  confidenceUpper Float         @map("confidence_upper")
+  targetDate      DateTime      @map("target_date")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  @@map("forecasts")
+}
+
+model ProcurementRequest {
+  id                   String               @id @default(uuid())
+  organizationId       String               @map("organization_id")
+  organization         Organization         @relation(fields: [organizationId], references: [id])
+  commodity            String
+  quantityMt           Float                @map("quantity_mt")
+  originPortId         String               @map("origin_port_id")
+  originPort           Port                 @relation("OriginProcurementPort", fields: [originPortId], references: [id])
+  destinationPortId    String               @map("destination_port_id")
+  destinationPort      Port                 @relation("DestinationProcurementPort", fields: [destinationPortId], references: [id])
+  requiredDeliveryDate DateTime             @map("required_delivery_date")
+  budgetInrCrore       Float                @map("budget_inr_crore")
+  status               String               @default("DRAFT")
+  notes                String?
+  createdAt            DateTime             @default(now()) @map("created_at")
+  updatedAt            DateTime             @updatedAt @map("updated_at")
+  optimizationRuns     OptimizationRun[]
+  riskAssessments      RiskAssessment[]
+  recommendations      Recommendation[]
+  contracts            Contract[]
+
+  @@map("procurement_requests")
+}
+
+model OptimizationRun {
+  id                   String               @id @default(uuid())
+  procurementRequestId String               @map("procurement_request_id")
+  procurementRequest   ProcurementRequest   @relation(fields: [procurementRequestId], references: [id])
+  runStatus            String               @map("run_status")
+  objectiveFunction    String               @map("objective_function")
+  computedAt           DateTime             @default(now()) @map("computed_at")
+  createdAt            DateTime             @default(now()) @map("created_at")
+  updatedAt            DateTime             @updatedAt @map("updated_at")
+  options              OptimizationOption[]
+
+  @@map("optimization_options_run")
+}
+
+model OptimizationOption {
+  id                String          @id @default(uuid())
+  optimizationRunId String          @map("optimization_run_id")
+  optimizationRun   OptimizationRun @relation(fields: [optimizationRunId], references: [id])
+  charterType       String          @map("charter_type")
+  vesselCategory    String          @map("vessel_category")
+  estimatedCostUsd  Float           @map("estimated_cost_usd")
+  estimatedDuration Float           @map("estimated_duration_days")
+  score             Float
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
+
+  @@map("optimization_options")
+}
+
+model RiskAssessment {
+  id                   String             @id @default(uuid())
+  procurementRequestId String             @map("procurement_request_id")
+  procurementRequest   ProcurementRequest @relation(fields: [procurementRequestId], references: [id])
+  demurrageRiskScore   Float              @map("demurrage_risk_score")
+  weatherRiskScore     Float              @map("weather_risk_score")
+  bunkerVolatiltyScore Float              @map("bunker_volatility_score")
+  compositeRiskScore   Float              @map("composite_risk_score")
+  riskLevel            String             @map("risk_level")
+  createdAt            DateTime           @default(now()) @map("created_at")
+  updatedAt            DateTime           @updatedAt @map("updated_at")
+
+  @@map("risk_assessments")
+}
+
+model Recommendation {
+  id                   String             @id @default(uuid())
+  procurementRequestId String             @map("procurement_request_id")
+  procurementRequest   ProcurementRequest @relation(fields: [procurementRequestId], references: [id])
+  strategyTitle        String             @map("strategy_title")
+  reasoningText        String             @map("reasoning_text")
+  confidenceScore      Float              @map("confidence_score")
+  actionType           String             @map("action_type")
+  createdAt            DateTime           @default(now()) @map("created_at")
+  updatedAt            DateTime           @updatedAt @map("updated_at")
+
+  @@map("recommendations")
+}
+
+model Contract {
+  id                   String             @id @default(uuid())
+  procurementRequestId String             @map("procurement_request_id")
+  procurementRequest   ProcurementRequest @relation(fields: [procurementRequestId], references: [id])
+  contractNumber       String             @unique @map("contract_number")
+  charterPartyType     String             @map("charter_party_type")
+  freightRateAgreed    Float              @map("freight_rate_agreed")
+  laytimeTerms         String             @map("laytime_terms")
+  demurrageRatePerDay  Float              @map("demurrage_rate_per_day")
+  status               String
+  createdAt            DateTime           @default(now()) @map("created_at")
+  updatedAt            DateTime           @updatedAt @map("updated_at")
+  voyages              Voyage[]
+
+  @@map("contracts")
+}
+
+model Voyage {
+  id            String    @id @default(uuid())
+  contractId    String    @map("contract_id")
+  contract      Contract  @relation(fields: [contractId], references: [id])
+  vesselId      String    @map("vessel_id")
+  vessel        Vessel    @relation(fields: [vesselId], references: [id])
+  departureDate DateTime? @map("departure_date")
+  arrivalDate   DateTime? @map("arrival_date")
+  currentStatus String    @map("current_status")
+  currentLat    Float?    @map("current_lat")
+  currentLong   Float?    @map("current_long")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@map("voyages")
+}
+
+model AuditLog {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  user          User     @relation(fields: [userId], references: [id])
+  action        String
+  entityType    String   @map("entity_type")
+  entityId      String   @map("entity_id")
+  changesBefore String?  @map("changes_before")
+  changesAfter  String?  @map("changes_after")
+  timestamp     DateTime @default(now())
+
+  @@index([userId, timestamp])
+  @@index([entityType, entityId])
+  @@map("audit_logs")
+}
+
+model DataImportJob {
+  id             String       @id @default(uuid())
+  filename       String
+  entityType     String       @map("entity_type")
+  status         String       @default("PENDING")
+  rowCount       Int          @default(0) @map("row_count")
+  validRowCount  Int          @default(0) @map("valid_row_count")
+  errorCount     Int          @default(0) @map("error_count")
+  warningCount   Int          @default(0) @map("warning_count")
+  errorsJson     String?      @map("errors_json")
+  stagedRowsJson String?      @map("staged_rows_json")
+  uploadedById   String       @map("uploaded_by_id")
+  uploadedBy     User         @relation(fields: [uploadedById], references: [id])
+  organizationId String       @map("organization_id")
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  @@index([uploadedById, createdAt])
+  @@map("data_import_jobs")
+}

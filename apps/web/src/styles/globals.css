@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-900 font-sans antialiased overflow-x-hidden;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  /* Custom crisp scrollbar for clean light dashboard */
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #F8FAFC;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #E2E8F0;
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #CBD5E1;
+  }
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Subtle, clean cards with soft borders & non-distracting subtle shadows */
+.clean-card {
+  @apply bg-white border border-slate-200/80 rounded-2xl shadow-sm transition-shadow duration-200 hover:shadow-md;
+}
+
+/* Indian Tri-Color Subtle Accent Utilities */
+.tricolor-stripe {
+  background: linear-gradient(90deg, #FF9933 0%, #FFFFFF 50%, #138808 100%);
+}
+
+.tricolor-badge {
+  background: linear-gradient(135deg, rgba(255,153,51,0.08) 0%, rgba(255,255,255,0.95) 50%, rgba(19,136,8,0.08) 100%);
+  border: 1px solid rgba(255, 153, 51, 0.25);
+}

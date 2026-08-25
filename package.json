@@ -1,0 +1,23 @@
+{
+  "name": "freightiq-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --parallel --filter \"./apps/*\" dev",
+    "dev:api": "pnpm --filter freightiq-api dev",
+    "dev:web": "pnpm --filter freightiq-web dev",
+    "build": "pnpm --filter ./packages/* build && pnpm --filter ./apps/* build",
+    "db:migrate": "pnpm --filter freightiq-api db:migrate",
+    "db:seed": "pnpm --filter freightiq-api db:seed",
+    "db:studio": "pnpm --filter freightiq-api db:studio",
+    "lint": "pnpm --recursive lint"
+  },
+  "devDependencies": {
+    "prettier": "^3.2.5",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}
