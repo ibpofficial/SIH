@@ -11,64 +11,65 @@ export const PortsPage: React.FC = () => {
     <div className="space-y-6 font-sans">
       <Breadcrumbs activePath="/ports" onNavigate={() => {}} />
 
-      <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs flex items-center justify-between">
+      {/* Header Banner */}
+      <div className="glass-card rounded-2xl p-6 shadow-sm flex items-center justify-between">
         <div>
           <div className="flex items-center space-x-2">
-            <h1 className="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
-              <Anchor className="w-5 h-5 text-india-saffron" />
+            <h1 className="text-xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2 font-display">
+              <Anchor className="w-5 h-5 text-orange-500" />
               <span>East Coast & Global Ports Registry</span>
             </h1>
-            <span className="px-2.5 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] font-mono rounded-full font-bold flex items-center gap-1 border border-emerald-300">
+            <span className="px-2.5 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-mono rounded-full font-bold flex items-center gap-1 border border-emerald-300">
               <Radio className="w-3 h-3 text-emerald-600 animate-pulse" />
-              <span>FIREBASE REAL-TIME</span>
+              <span>LIVE REGISTRY STREAM</span>
             </span>
           </div>
-          <p className="text-xs text-slate-500 font-mono mt-0.5">
-            Max <GlossaryTerm termId="draft">Draft</GlossaryTerm> & <GlossaryTerm termId="loa">LOA</GlossaryTerm> Physical Limitations for Vessel Class Verification
+          <p className="text-xs text-slate-500 font-mono mt-1">
+            Max <GlossaryTerm termId="draft">Draft</GlossaryTerm> & <GlossaryTerm termId="loa">LOA</GlossaryTerm> Channel Limitations for Constraint Verification
           </p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {loading ? (
-          <div className="col-span-full py-8 text-center text-slate-400 font-mono text-xs">
+          <div className="col-span-full py-12 text-center text-slate-400 font-mono text-xs glass-card rounded-2xl">
             Streaming ports registry...
           </div>
         ) : ports.length === 0 ? (
-          <div className="col-span-full py-12 text-center space-y-3 bg-white border border-slate-200 rounded-xl">
+          <div className="col-span-full py-12 text-center space-y-3 glass-card rounded-2xl">
             <Anchor className="w-12 h-12 text-slate-300 mx-auto" />
-            <div className="text-slate-900 font-bold text-sm">No Ports Registered</div>
-            <p className="text-xs text-slate-500 max-w-md mx-auto font-mono">
+            <div className="text-slate-900 font-bold text-sm font-sans">No Ports Registered</div>
+            <p className="text-xs text-slate-500 max-w-md mx-auto font-sans">
               The port registry stores channel depth constraints (Max Draft) and berth length limits (Max LOA). Use the Data Ingestion Studio to import port CSV feeds.
             </p>
           </div>
         ) : (
           ports.map((port) => (
-            <div key={port.id} className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-3 font-mono text-xs">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+            <div key={port.id} className="glass-card rounded-2xl p-5 shadow-sm space-y-3 font-mono text-xs hover:border-orange-300 transition-colors">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div>
-                  <div className="font-bold text-slate-900 font-sans text-sm">{port.name}</div>
-                  <div className="text-[10px] text-slate-500">{port.state || port.country}</div>
+                  <div className="font-extrabold text-slate-900 font-sans text-sm">{port.name}</div>
+                  <div className="text-[10px] text-slate-500 mt-0.5">{port.state || port.country}</div>
                 </div>
-                <span className="px-2 py-0.5 bg-slate-100 text-slate-700 text-[10px] font-bold rounded border border-slate-200">
+                <span className="px-2.5 py-1 bg-slate-100 text-slate-700 text-[10px] font-bold rounded-full border border-slate-200 shadow-2xs">
                   {port.code}
                 </span>
               </div>
 
               <div className="grid grid-cols-2 gap-2 text-[11px]">
-                <div className="p-2 bg-slate-50 rounded border border-slate-100">
-                  <div className="text-slate-400 text-[9px] uppercase font-bold">Max <GlossaryTerm termId="draft">Draft</GlossaryTerm></div>
-                  <div className="text-sm font-bold text-orange-600 font-mono mt-0.5">{port.maxDraftM}m</div>
+                <div className="p-3 bg-slate-50/80 rounded-xl border border-slate-200/80">
+                  <div className="text-slate-400 text-[9px] uppercase font-bold font-sans">Max <GlossaryTerm termId="draft">Draft</GlossaryTerm></div>
+                  <div className="text-base font-extrabold text-orange-600 font-mono mt-0.5">{port.maxDraftM}m</div>
                 </div>
-                <div className="p-2 bg-slate-50 rounded border border-slate-100">
-                  <div className="text-slate-400 text-[9px] uppercase font-bold">Max <GlossaryTerm termId="loa">LOA</GlossaryTerm></div>
-                  <div className="text-sm font-bold text-blue-600 font-mono mt-0.5">{port.maxLoaM}m</div>
+                <div className="p-3 bg-slate-50/80 rounded-xl border border-slate-200/80">
+                  <div className="text-slate-400 text-[9px] uppercase font-bold font-sans">Max <GlossaryTerm termId="loa">LOA</GlossaryTerm></div>
+                  <div className="text-base font-extrabold text-blue-600 font-mono mt-0.5">{port.maxLoaM}m</div>
                 </div>
               </div>
 
-              <div className="text-[10px] text-slate-500 pt-1 flex justify-between">
-                <span>Berth Capacity:</span>
-                <span className="font-bold text-slate-800">{port.berthCapacityTpd ? port.berthCapacityTpd.toLocaleString() : '25,000'} TPD</span>
+              <div className="text-[10px] text-slate-500 pt-1 flex justify-between font-sans border-t border-slate-100">
+                <span>Berth Handling Capacity:</span>
+                <span className="font-bold text-slate-800 font-mono">{port.berthCapacityTpd ? port.berthCapacityTpd.toLocaleString() : '25,000'} TPD</span>
               </div>
             </div>
           ))
@@ -77,3 +78,4 @@ export const PortsPage: React.FC = () => {
     </div>
   );
 };
+

@@ -4,14 +4,14 @@
 
 @layer base {
   body {
-    @apply bg-slate-50 text-slate-900 font-sans antialiased overflow-x-hidden;
+    @apply bg-slate-50/90 text-slate-900 font-sans antialiased overflow-x-hidden;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
   /* Custom crisp scrollbar for clean light dashboard */
   ::-webkit-scrollbar {
-    width: 5px;
-    height: 5px;
+    width: 6px;
+    height: 6px;
   }
 
   ::-webkit-scrollbar-track {
@@ -19,12 +19,12 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #E2E8F0;
+    background: #CBD5E1;
     border-radius: 9999px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #CBD5E1;
+    background: #94A3B8;
   }
 }
 
@@ -32,9 +32,38 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Subtle, clean cards with soft borders & non-distracting subtle shadows */
-.clean-card {
-  @apply bg-white border border-slate-200/80 rounded-2xl shadow-sm transition-shadow duration-200 hover:shadow-md;
+/* Premium Glassmorphic Cards & Elevated Surfaces */
+.glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-card:hover {
+  border-color: rgba(203, 213, 225, 0.9);
+  box-shadow: 0 10px 30px -4px rgba(15, 23, 42, 0.08), 0 4px 12px -2px rgba(15, 23, 42, 0.04);
+}
+
+.glass-nav {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* Glowing Accents & Badges */
+.glow-orange {
+  box-shadow: 0 0 15px -3px rgba(249, 115, 22, 0.25);
+}
+
+.glow-emerald {
+  box-shadow: 0 0 15px -3px rgba(16, 185, 129, 0.25);
+}
+
+.glow-indigo {
+  box-shadow: 0 0 15px -3px rgba(99, 102, 241, 0.25);
 }
 
 /* Indian Tri-Color Subtle Accent Utilities */
@@ -46,3 +75,4 @@
   background: linear-gradient(135deg, rgba(255,153,51,0.08) 0%, rgba(255,255,255,0.95) 50%, rgba(19,136,8,0.08) 100%);
   border: 1px solid rgba(255, 153, 51, 0.25);
 }
+

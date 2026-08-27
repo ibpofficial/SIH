@@ -64,10 +64,11 @@ export const ProcurementPage: React.FC = () => {
   const [whatIfFuelPricePct, setWhatIfFuelPricePct] = useState<number>(0);
   const [whatIfPortDelayDays, setWhatIfPortDelayDays] = useState<number>(0);
 
-  // Pipeline Loading State
+  // Pipeline Loading & Error State
   const [analyzingId, setAnalyzingId] = useState<string | null>(null);
   const [analysisStage, setAnalysisStage] = useState<number>(0);
   const [analysisReport, setAnalysisReport] = useState<FullAnalysisReport | null>(null);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
 
   // Lineage Disclosure Toggle
   const [showLineage, setShowLineage] = useState(false);
@@ -142,6 +143,7 @@ export const ProcurementPage: React.FC = () => {
     setAnalyzingId(req.id);
     setAnalysisStage(1);
     setAnalysisReport(null);
+    setAnalysisError(null);
 
     const timer1 = setTimeout(() => setAnalysisStage(2), 400);
     const timer2 = setTimeout(() => setAnalysisStage(4), 800);
@@ -152,7 +154,7 @@ export const ProcurementPage: React.FC = () => {
       setAnalysisReport(res.data);
     } catch (err: any) {
       const msg = err.response?.data?.message || err.message || 'Analysis pipeline execution failed';
-      alert(`Decision Engine Pipeline Failed: ${msg}`);
+      setAnalysisError(msg);
     } finally {
       clearTimeout(timer1);
       clearTimeout(timer2);
@@ -313,10 +315,6 @@ export const ProcurementPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Staged Pipeline Loading Visualizer Overlay */}
-      {analyzingId && (
-        <div className="p-6 bg-white border border-orange-300 rounded-xl shadow-lg space-y-4 font-mono animate-in fade-in print:hidden">
-          <div className="flex items-center justify-between">
       {/* Staged Pipeline Loading Visualizer Overlay */}
       {analyzingId && (
         <div className="p-6 bg-white border border-orange-300 rounded-xl shadow-lg space-y-4 font-mono animate-in fade-in print:hidden">

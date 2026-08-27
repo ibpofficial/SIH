@@ -35,6 +35,17 @@ export const AppShell: React.FC<AppShellProps> = ({ children, activePath, onNavi
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isTourOpen, setIsTourOpen] = useState(false);
 
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsCommandOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   // Grouped Navigation Sections
   const navSections = [
     {
