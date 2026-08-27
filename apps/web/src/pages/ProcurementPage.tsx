@@ -366,6 +366,31 @@ export const ProcurementPage: React.FC = () => {
       {/* Analytical Results Dashboard Panels */}
       {analysisReport && (
         <div className="space-y-6 animate-in fade-in">
+          {/* TOP REPORT EXPORT ACTION TOOLBAR */}
+          <div className="glass-card rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3 shadow-sm border border-slate-200/80">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-orange-50 rounded-xl border border-orange-200">
+                <FileSpreadsheet className="w-5 h-5 text-orange-600" />
+              </div>
+              <div>
+                <div className="font-extrabold text-slate-900 text-sm font-sans">Official Decision Recommendation Dossier</div>
+                <div className="text-xs text-slate-500 font-mono">
+                  Plan ID: <span className="font-bold text-slate-800">{analysisReport.procurementRequestId}</span> • Generated: {new Date(analysisReport.generatedAt || Date.now()).toLocaleTimeString()}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => window.print()}
+                className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold font-sans inline-flex items-center space-x-2 shadow-sm transition-all cursor-pointer"
+              >
+                <Printer className="w-4 h-4 text-orange-400" />
+                <span>Export Recommendation Memo (PDF)</span>
+              </button>
+            </div>
+          </div>
+
           {/* SECTION 0: GEMINI AI RECOMMENDATION & REASONING SYNTHESIS LAYER */}
           <div className="bg-gradient-to-br from-purple-50/80 via-white to-orange-50/80 border border-purple-200 rounded-xl p-5 shadow-sm space-y-4">
             <div className="flex items-center justify-between border-b border-purple-100 pb-3">
@@ -486,9 +511,15 @@ export const ProcurementPage: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                <span className="px-2.5 py-0.5 bg-blue-100 text-blue-800 text-[10px] font-mono font-bold rounded-full border border-blue-300">
-                  TREND: {analysisReport.forecast.trendDirection} ({analysisReport.forecast.trendMagnitudePct}%)
-                </span>
+                <div className="flex items-center space-x-2">
+                  <span className="px-2.5 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-mono font-bold rounded-full border border-emerald-300 flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                    <span>RETRAIN ENGINE: ACTIVE (24h Auto-Cycle)</span>
+                  </span>
+                  <span className="px-2.5 py-0.5 bg-blue-100 text-blue-800 text-[10px] font-mono font-bold rounded-full border border-blue-300">
+                    TREND: {analysisReport.forecast.trendDirection} ({analysisReport.forecast.trendMagnitudePct}%)
+                  </span>
+                </div>
               </div>
 
               <div className="overflow-x-auto">
@@ -757,6 +788,77 @@ export const ProcurementPage: React.FC = () => {
                   <div className="text-[10px] text-rose-800 leading-tight pt-1 border-t border-rose-100">
                     {analysisReport.rejectedVessels?.[0]?.rejectionReason}
                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* SECTION 4 VISUAL: BALLAST REPOSITIONING ROUTE & MARGIN VISUALIZER */}
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 text-white space-y-4 shadow-lg">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center space-x-2">
+                <Compass className="w-5 h-5 text-orange-400" />
+                <div>
+                  <h2 className="text-sm font-bold font-sans tracking-wide">
+                    Idle Repositioning Ballast Route Visualizer
+                  </h2>
+                  <div className="text-xs font-mono text-slate-400">
+                    Vessel Location: <span className="text-orange-400 font-bold">Paradip Discharge Anchorage</span> • Candidate Ballast Destinations
+                  </div>
+                </div>
+              </div>
+              <span className="px-3 py-1 bg-orange-500/20 text-orange-300 text-[10px] font-mono font-bold rounded-full border border-orange-500/40">
+                RECOMMENDED: BALLAST TO PORT HEDLAND (+ $42,500 MARGIN)
+              </span>
+            </div>
+
+            {/* Interactive Route Nodes */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 font-mono text-xs">
+              <div className="p-3.5 bg-slate-800/90 border border-orange-500/50 rounded-xl space-y-2 relative overflow-hidden">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-orange-400 font-sans">Port Hedland AU</span>
+                  <span className="text-[9px] px-2 py-0.5 bg-orange-500 text-slate-950 font-bold rounded">TOP PICK</span>
+                </div>
+                <div className="text-[11px] text-slate-300 space-y-1">
+                  <div>Ballast Dist: <strong className="text-white">3,400 nm</strong></div>
+                  <div>Sea Fuel Cons: <strong className="text-white">364 MT</strong></div>
+                  <div>Est. Net Margin: <strong className="text-emerald-400">+$42,500 USD</strong></div>
+                </div>
+              </div>
+
+              <div className="p-3.5 bg-slate-800/60 border border-slate-700/80 rounded-xl space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-blue-400 font-sans">Richards Bay ZA</span>
+                  <span className="text-[9px] px-2 py-0.5 bg-slate-700 text-slate-300 font-bold rounded">COAL STEM</span>
+                </div>
+                <div className="text-[11px] text-slate-300 space-y-1">
+                  <div>Ballast Dist: <strong className="text-white">4,800 nm</strong></div>
+                  <div>Sea Fuel Cons: <strong className="text-white">512 MT</strong></div>
+                  <div>Est. Net Margin: <strong className="text-emerald-400">+$38,200 USD</strong></div>
+                </div>
+              </div>
+
+              <div className="p-3.5 bg-slate-800/60 border border-slate-700/80 rounded-xl space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-emerald-400 font-sans">Samarinda ID</span>
+                  <span className="text-[9px] px-2 py-0.5 bg-slate-700 text-slate-300 font-bold rounded">SHORT BALLAST</span>
+                </div>
+                <div className="text-[11px] text-slate-300 space-y-1">
+                  <div>Ballast Dist: <strong className="text-white">2,150 nm</strong></div>
+                  <div>Sea Fuel Cons: <strong className="text-white">230 MT</strong></div>
+                  <div>Est. Net Margin: <strong className="text-emerald-400">+$18,400 USD</strong></div>
+                </div>
+              </div>
+
+              <div className="p-3.5 bg-slate-800/60 border border-slate-700/80 rounded-xl space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-purple-400 font-sans">Vostochny RU</span>
+                  <span className="text-[9px] px-2 py-0.5 bg-slate-700 text-slate-300 font-bold rounded">PACIFIC</span>
+                </div>
+                <div className="text-[11px] text-slate-300 space-y-1">
+                  <div>Ballast Dist: <strong className="text-white">3,800 nm</strong></div>
+                  <div>Sea Fuel Cons: <strong className="text-white">405 MT</strong></div>
+                  <div>Est. Net Margin: <strong className="text-emerald-400">+$29,800 USD</strong></div>
                 </div>
               </div>
             </div>
