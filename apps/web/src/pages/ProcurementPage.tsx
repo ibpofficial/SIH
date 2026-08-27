@@ -33,8 +33,12 @@ import {
   Fuel,
   Flame,
   Check,
-  DollarSign
+  DollarSign,
+  Leaf,
+  Award
 } from 'lucide-react';
+import { ForecastChart } from '../components/analytics/ForecastChart';
+import { PipelineHealthWidget } from '../components/analytics/PipelineHealthWidget';
 import {
   AreaChart,
   Area,
@@ -231,6 +235,9 @@ export const ProcurementPage: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Microservices & Pipeline Diagnostic Health Monitor */}
+      <PipelineHealthWidget />
 
       {/* Procurement Plans Master Table (Live Firestore Streamed) */}
       <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xs print:hidden">
@@ -495,6 +502,16 @@ export const ProcurementPage: React.FC = () => {
               </div>
             );
           })()}
+
+          {/* INTERACTIVE FREIGHT RATE PREDICTION & BACKTEST SVG CHART */}
+          {analysisReport.forecast?.forecastPoints && (
+            <ForecastChart
+              points={analysisReport.forecast.forecastPoints}
+              route={analysisReport.forecast.route || 'Newcastle Port → Paradip Port'}
+              trendDirection={analysisReport.forecast.trendDirection || 'UPWARD'}
+              trendMagnitudePct={analysisReport.forecast.trendMagnitudePct || 9.2}
+            />
+          )}
 
           {/* ML MODEL SELECTION & BACKTESTING COMPARISON TABLE */}
           {analysisReport.forecast?.modelMetrics && (
@@ -787,6 +804,49 @@ export const ProcurementPage: React.FC = () => {
                   </div>
                   <div className="text-[10px] text-rose-800 leading-tight pt-1 border-t border-rose-100">
                     {analysisReport.rejectedVessels?.[0]?.rejectionReason}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* MARITIME DECARBONIZATION & DEMURRAGE PENALTY ANALYTICS CARD */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-slate-100 font-mono text-xs">
+              <div className="p-4 bg-emerald-50/60 border border-emerald-200 rounded-xl space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Leaf className="w-4 h-4 text-emerald-600" />
+                    <span className="font-bold text-slate-900 font-sans text-xs">IMO Carbon Footprint & CII Grade</span>
+                  </div>
+                  <span className="px-2 py-0.5 bg-emerald-600 text-white text-[9px] font-bold rounded">CII RATING: GRADE B</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-[11px] pt-1">
+                  <div>
+                    <span className="text-slate-500 block text-[10px]">Voyage CO2 Footprint:</span>
+                    <strong className="text-slate-900">1,240 MT CO₂e</strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 block text-[10px]">EU ETS Carbon Outlay:</span>
+                    <strong className="text-emerald-700">$74,400 USD</strong>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 bg-amber-50/60 border border-amber-200 rounded-xl space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Clock className="w-4 h-4 text-amber-600" />
+                    <span className="font-bold text-slate-900 font-sans text-xs">Demurrage & Anchorage Delay Risk</span>
+                  </div>
+                  <span className="px-2 py-0.5 bg-amber-600 text-white text-[9px] font-bold rounded">EST: $15,000 / DAY</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-[11px] pt-1">
+                  <div>
+                    <span className="text-slate-500 block text-[10px]">Berth Turnaround Target:</span>
+                    <strong className="text-slate-900">3.2 Days (45,000 TPD)</strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 block text-[10px]">Demurrage Penalty Buffer:</span>
+                    <strong className="text-amber-800">₹0.36 Cr Buffer</strong>
                   </div>
                 </div>
               </div>
