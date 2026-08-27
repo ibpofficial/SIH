@@ -45,14 +45,14 @@ def health_check():
 @app.post("/analyze")
 def analyze_procurement_request(req: AnalyzeRequest):
     try:
-        # Base historical rate anchor
+        # Base historical rate anchor based on commodity profile
         base_rate = 18.75
         if "Coal" in req.commodity:
             base_rate = 19.50
         elif "Ore" in req.commodity:
             base_rate = 12.20
 
-        # Stage 1: Run ML Forecast Pipeline with Backtest Selection
+        # Stage 1: Run ML Forecast Pipeline with Walk-Forward Backtest Model Selection
         forecast_result = run_freight_forecast(
             base_rate=base_rate,
             origin_name=req.originPortName,
@@ -66,7 +66,7 @@ def analyze_procurement_request(req: AnalyzeRequest):
         trend_dir = forecast_result["trendDirection"]
         trend_mag = forecast_result["trendMagnitudePct"]
 
-        # Stage 2: Evaluate East Coast Port & Vessel Constraints
+        # Stage 2: Evaluate East Coast Port & Vessel Constraints with Route Transit Metrics
         constraint_result = evaluate_vessel_constraints(
             cargo_quantity_mt=req.quantityMt,
             origin_draft_m=req.originDraftM,
@@ -74,32 +74,46 @@ def analyze_procurement_request(req: AnalyzeRequest):
             dest_draft_m=req.destinationDraftM,
             dest_length_m=req.destinationLengthM,
             dest_handling_mt_per_day=req.destinationHandlingMtPerDay,
-            forecasted_base_rate=current_spot
+            forecasted_base_rate=current_spot,
+            origin_port_name=req.originPortName,
+            dest_port_name=req.destinationPortName
         )
 
-        # Stage 3: Market Entry Timing & Contract Strategy Comparator
+        turnaround = constraint_result["feasible"][0]["estimatedTurnaroundDays"] if constraint_result["feasible"] else 3.0
+
+        # Stage 5: Composite Risk Scoring & Early Warnings
+        # Determine laycan delivery window days
+        delivery_days = 30
+        try:
+            rdate = datetime.strptime(req.requiredDeliveryDate, "%Y-%m-%d")
+            delivery_days = max(1, (rdate - datetime.now()).days)
+        except Exception:
+            pass
+
+        risk_result = compute_composite_risk(
+            trend_magnitude_pct=trend_mag,
+            turnaround_days=turnaround,
+            dest_port_name=req.destinationPortName,
+            required_delivery_days=delivery_days
+        )
+
+        # Stage 3: Market Entry Timing & Dynamic Contract Strategy Comparator
         contract_strategies = evaluate_contract_strategies(
             cargo_quantity_mt=req.quantityMt,
             current_spot_rate=current_spot,
             forecasted_rate_90d=forecasted_90d,
-            trend_direction=trend_dir
+            trend_direction=trend_dir,
+            trend_magnitude_pct=trend_mag,
+            volatility_score=risk_result["freightVolatilityScore"],
+            turnaround_days=turnaround
         )
 
-        # Stage 4: Idle Scenario & Repositioning Options
+        # Stage 4: Data-Driven Idle Scenario & Repositioning Options
         best_vessel_code = constraint_result["feasible"][0]["vesselTypeName"] if constraint_result["feasible"] else "Panamax"
         idle_options = evaluate_idle_repositioning(
             origin_port_name=req.originPortName,
             dest_port_name=req.destinationPortName,
             vessel_category=best_vessel_code
-        )
-
-        # Stage 5: Composite Risk Scoring & Early Warnings
-        turnaround = constraint_result["feasible"][0]["estimatedTurnaroundDays"] if constraint_result["feasible"] else 3.0
-        risk_result = compute_composite_risk(
-            trend_magnitude_pct=trend_mag,
-            turnaround_days=turnaround,
-            dest_port_name=req.destinationPortName,
-            required_delivery_days=30
         )
 
         return {

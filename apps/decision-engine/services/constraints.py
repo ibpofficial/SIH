@@ -1,6 +1,12 @@
 import math
 from typing import List, Dict, Any
 
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from services.trade_routes import get_route_details
+
 VESSEL_CLASSES = [
     {"id": "handy", "code": "HANDY", "name": "Handysize Bulk Carrier", "capacity": 28000, "draft": 10.2, "length": 170.0, "cost_per_day": 12500},
     {"id": "handymax", "code": "HANDYMAX", "name": "Handymax Bulk Carrier", "capacity": 45000, "draft": 11.5, "length": 190.0, "cost_per_day": 15000},
@@ -16,11 +22,19 @@ def evaluate_vessel_constraints(
     dest_draft_m: float,
     dest_length_m: float,
     dest_handling_mt_per_day: float,
-    forecasted_base_rate: float
+    forecasted_base_rate: float,
+    origin_port_name: str = "",
+    dest_port_name: str = ""
 ) -> Dict[str, List[Dict[str, Any]]]:
     
     min_permissible_draft = min(origin_draft_m, dest_draft_m)
     min_permissible_length = min(origin_length_m, dest_length_m)
+
+    # Route transit lookup
+    transit_days = 14.0
+    if origin_port_name and dest_port_name:
+        route_meta = get_route_details(origin_port_name, dest_port_name)
+        transit_days = route_meta["transitDays"]
 
     feasible = []
     rejected = []
@@ -40,8 +54,9 @@ def evaluate_vessel_constraints(
 
         voyages_needed = math.ceil(cargo_quantity_mt / v['capacity'])
         turnaround_days = round(math.ceil(cargo_quantity_mt / dest_handling_mt_per_day) + 0.5, 1)
+        total_voyage_days = transit_days + turnaround_days
 
-        # Rate scaling for larger vs smaller vessels
+        # Economies of scale factor for bulk vessel categories
         scale_factor = 1.0
         if v['code'] == 'CAPE':
             scale_factor = 0.65
