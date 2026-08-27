@@ -77,7 +77,8 @@ export const ProcurementPage: React.FC = () => {
   // Lineage Disclosure Toggle
   const [showLineage, setShowLineage] = useState(false);
 
-  // Detailed Create Form State
+  // Detailed Create Form State & Modal Tabs
+  const [modalTab, setModalTab] = useState<'CARGO' | 'OPERATIONS' | 'COMMERCIAL'>('CARGO');
   const [commodity, setCommodity] = useState('Australian Blast Furnace Coking Coal');
   const [quantityMt, setQuantityMt] = useState('180000');
   const [originPortId, setOriginPortId] = useState('');
@@ -87,6 +88,15 @@ export const ProcurementPage: React.FC = () => {
     new Date(Date.now() + 45 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
   );
   const [budgetCrore, setBudgetCrore] = useState('165.0');
+  const [incoterm, setIncoterm] = useState<'FOB' | 'CFR' | 'CIF'>('FOB');
+  const [targetFreightCeilingUsd, setTargetFreightCeilingUsd] = useState('28.50');
+  const [ashContentPct, setAshContentPct] = useState('9.5');
+  const [volatileMatterPct, setVolatileMatterPct] = useState('21.0');
+  const [csrRating, setCsrRating] = useState('68.0');
+  const [dischargeRateTpd, setDischargeRateTpd] = useState('45000');
+  const [demurrageRateUsdDay, setDemurrageRateUsdDay] = useState('15000');
+  const [maxVesselAgeYears, setMaxVesselAgeYears] = useState('15');
+  const [esgCiiGrade, setEsgCiiGrade] = useState('GRADE_B');
   const [notes, setNotes] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -127,6 +137,15 @@ export const ProcurementPage: React.FC = () => {
         fuelType,
         requiredDeliveryDate: deliveryDate,
         budgetInrCrore: parseFloat(budgetCrore),
+        incoterm,
+        targetFreightCeilingUsd: parseFloat(targetFreightCeilingUsd),
+        ashContentPct: parseFloat(ashContentPct),
+        volatileMatterPct: parseFloat(volatileMatterPct),
+        csrRating: parseFloat(csrRating),
+        dischargeRateTpd: parseFloat(dischargeRateTpd),
+        demurrageRateUsdDay: parseFloat(demurrageRateUsdDay),
+        maxVesselAgeYears: parseInt(maxVesselAgeYears, 10),
+        esgCiiGrade,
         notes,
         status: 'DRAFT',
         orgId: 'sail-org-id',
@@ -1061,136 +1080,346 @@ export const ProcurementPage: React.FC = () => {
 
       {/* Detailed Create Procurement Plan Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 print:hidden">
-          <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-xl overflow-hidden shadow-2xl space-y-0">
-            <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
-              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <FileSpreadsheet className="w-4 h-4 text-orange-600" />
-                <span>Create Detailed Bulk Cargo Procurement Plan</span>
-              </h3>
-              <button onClick={() => setIsModalOpen(false)} className="p-1 text-slate-400 hover:text-slate-700">
-                <X className="w-4 h-4" />
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 print:hidden">
+          <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-3xl overflow-hidden shadow-2xl space-y-0 animate-in zoom-in-95">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-900 text-white">
+              <div>
+                <h3 className="text-base font-extrabold flex items-center gap-2 font-display">
+                  <FileSpreadsheet className="w-5 h-5 text-orange-400" />
+                  <span>Create Enterprise Bulk Cargo Procurement Specification</span>
+                </h3>
+                <p className="text-xs text-slate-400 font-mono mt-0.5">
+                  SAIL Maritime Chartering • Cargo Specifications, Port Guarantees & Commercial Incoterms
+                </p>
+              </div>
+              <button onClick={() => setIsModalOpen(false)} className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors">
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleCreatePlan} className="p-6 space-y-4 text-xs font-sans">
+            {/* Modal Tab Bar Navigation */}
+            <div className="flex border-b border-slate-200 bg-slate-50 px-6 pt-3 space-x-4 font-mono text-xs">
+              <button
+                type="button"
+                onClick={() => setModalTab('CARGO')}
+                className={`pb-3 font-bold border-b-2 transition-all cursor-pointer ${
+                  modalTab === 'CARGO' ? 'border-orange-500 text-orange-600' : 'border-transparent text-slate-500 hover:text-slate-900'
+                }`}
+              >
+                1. Cargo & Quality Specs
+              </button>
+              <button
+                type="button"
+                onClick={() => setModalTab('OPERATIONS')}
+                className={`pb-3 font-bold border-b-2 transition-all cursor-pointer ${
+                  modalTab === 'OPERATIONS' ? 'border-orange-500 text-orange-600' : 'border-transparent text-slate-500 hover:text-slate-900'
+                }`}
+              >
+                2. Port & Laycan Operations
+              </button>
+              <button
+                type="button"
+                onClick={() => setModalTab('COMMERCIAL')}
+                className={`pb-3 font-bold border-b-2 transition-all cursor-pointer ${
+                  modalTab === 'COMMERCIAL' ? 'border-orange-500 text-orange-600' : 'border-transparent text-slate-500 hover:text-slate-900'
+                }`}
+              >
+                3. Financial & IMO ESG Controls
+              </button>
+            </div>
+
+            <form onSubmit={handleCreatePlan} className="p-6 space-y-4 text-xs font-sans max-h-[70vh] overflow-y-auto">
               {formError && (
-                <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-rose-800 flex items-center space-x-2">
+                <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 flex items-center space-x-2 font-mono">
                   <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
                   <span>{formError}</span>
                 </div>
               )}
 
-              <div>
-                <label className="block text-slate-700 font-semibold mb-1">Bulk Commodity Cargo</label>
-                <select
-                  value={commodity}
-                  onChange={(e) => setCommodity(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 focus:outline-none focus:border-orange-500 font-sans"
-                >
-                  <option value="Australian Blast Furnace Coking Coal">Australian Blast Furnace Coking Coal</option>
-                  <option value="Odisha Iron Ore Fines">Odisha Iron Ore Fines</option>
-                  <option value="South African Thermal Coal">South African Thermal Coal</option>
-                  <option value="Indonesian Steam Coal">Indonesian Steam Coal</option>
-                </select>
-              </div>
+              {/* TAB 1: CARGO & QUALITY SPECIFICATIONS */}
+              {modalTab === 'CARGO' && (
+                <div className="space-y-4 animate-in fade-in">
+                  <div>
+                    <label className="block text-slate-700 font-bold mb-1">Bulk Cargo Commodity Specification</label>
+                    <select
+                      value={commodity}
+                      onChange={(e) => setCommodity(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-900 font-semibold focus:outline-none focus:border-orange-500 font-sans"
+                    >
+                      <option value="Australian Blast Furnace Coking Coal">Australian Blast Furnace Coking Coal (Prime Hard)</option>
+                      <option value="Odisha Iron Ore Fines (+62% Fe Grade)">Odisha Iron Ore Fines (+62% Fe Grade)</option>
+                      <option value="South African High-CV Thermal Coal">South African High-CV Thermal Coal (RB1 Grade)</option>
+                      <option value="Indonesian Low-Ash Steam Coal">Indonesian Low-Ash Steam Coal (GAR 5000)</option>
+                    </select>
+                  </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-slate-700 font-semibold mb-1">Cargo Quantity (Metric Tons)</label>
-                  <input
-                    type="number"
-                    required
-                    value={quantityMt}
-                    onChange={(e) => setQuantityMt(e.target.value)}
-                    placeholder="180000"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 focus:outline-none focus:border-orange-500 font-mono"
-                  />
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-slate-700 font-bold mb-1">Total Cargo Quantity (Metric Tons)</label>
+                      <input
+                        type="number"
+                        required
+                        value={quantityMt}
+                        onChange={(e) => setQuantityMt(e.target.value)}
+                        placeholder="180000"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 focus:outline-none focus:border-orange-500 font-mono font-bold"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-slate-700 font-bold mb-1">Target Freight Rate Ceiling ($/MT USD)</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        required
+                        value={targetFreightCeilingUsd}
+                        onChange={(e) => setTargetFreightCeilingUsd(e.target.value)}
+                        placeholder="28.50"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 focus:outline-none focus:border-orange-500 font-mono font-bold text-orange-600"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Quality Specs Panel */}
+                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+                    <div className="font-bold text-slate-900 text-xs font-sans flex items-center justify-between border-b border-slate-200 pb-2">
+                      <span>Commodity Technical Quality Parameters</span>
+                      <span className="text-[10px] text-slate-500 font-mono">SAIL Quality Standard Assurance</span>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-slate-600 text-[10px] font-mono mb-1">Ash Content (%)</label>
+                        <input
+                          type="number"
+                          step="0.1"
+                          value={ashContentPct}
+                          onChange={(e) => setAshContentPct(e.target.value)}
+                          className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-900 font-mono"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-slate-600 text-[10px] font-mono mb-1">Volatile Matter VM (%)</label>
+                        <input
+                          type="number"
+                          step="0.1"
+                          value={volatileMatterPct}
+                          onChange={(e) => setVolatileMatterPct(e.target.value)}
+                          className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-900 font-mono"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-slate-600 text-[10px] font-mono mb-1">Coke Strength (CSR Rating)</label>
+                        <input
+                          type="number"
+                          step="0.1"
+                          value={csrRating}
+                          onChange={(e) => setCsrRating(e.target.value)}
+                          className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-900 font-mono"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-slate-700 font-semibold mb-1">Target Budget (₹ Crore)</label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    required
-                    value={budgetCrore}
-                    onChange={(e) => setBudgetCrore(e.target.value)}
-                    placeholder="165.0"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 focus:outline-none focus:border-orange-500 font-mono"
-                  />
+              )}
+
+              {/* TAB 2: PORT & LAYCAN OPERATIONS */}
+              {modalTab === 'OPERATIONS' && (
+                <div className="space-y-4 animate-in fade-in">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-slate-700 font-bold mb-1">Origin Loading Port</label>
+                      <select
+                        value={originPortId}
+                        onChange={(e) => setOriginPortId(e.target.value)}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 focus:outline-none focus:border-orange-500 font-mono"
+                      >
+                        {ports.map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.name} ({p.country}) — Max Draft {p.maxDraftM || 15.2}m
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-slate-700 font-bold mb-1">Destination Discharge Port</label>
+                      <select
+                        value={destinationPortId}
+                        onChange={(e) => setDestinationPortId(e.target.value)}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 focus:outline-none focus:border-orange-500 font-mono"
+                      >
+                        {ports.map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.name} ({p.country}) — Max Draft {p.maxDraftM || 14.5}m
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-slate-700 font-bold mb-1">Guaranteed Discharge Rate (MT/Day)</label>
+                      <input
+                        type="number"
+                        value={dischargeRateTpd}
+                        onChange={(e) => setDischargeRateTpd(e.target.value)}
+                        placeholder="45000"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 font-mono font-bold"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-slate-700 font-bold mb-1">Required Laycan Delivery Date</label>
+                      <input
+                        type="date"
+                        required
+                        value={deliveryDate}
+                        onChange={(e) => setDeliveryDate(e.target.value)}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 font-mono font-bold"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-amber-50/50 rounded-2xl border border-amber-200 space-y-2 text-xs text-amber-900 font-mono">
+                    <div className="font-bold font-sans flex items-center gap-1.5 text-amber-950">
+                      <Clock className="w-4 h-4 text-amber-600" />
+                      <span>East Coast Laycan & Congestion Note</span>
+                    </div>
+                    <p className="text-[11px] text-amber-800 leading-relaxed font-sans">
+                      Discharge port channel limits will be verified automatically by the Python decision engine against max draft depth and berth turnaround rates.
+                    </p>
+                  </div>
                 </div>
-              </div>
+              )}
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-slate-700 font-semibold mb-1">Origin Loading Port</label>
-                  <select
-                    value={originPortId}
-                    onChange={(e) => setOriginPortId(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 focus:outline-none focus:border-orange-500 font-mono"
-                  >
-                    {ports.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.name} ({p.country})
-                      </option>
-                    ))}
-                  </select>
+              {/* TAB 3: FINANCIAL, COMMERCIAL & ESG CONTROLS */}
+              {modalTab === 'COMMERCIAL' && (
+                <div className="space-y-4 animate-in fade-in">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-slate-700 font-bold mb-1">Incoterms Commercial Rule</label>
+                      <select
+                        value={incoterm}
+                        onChange={(e) => setIncoterm(e.target.value as any)}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 font-bold font-mono"
+                      >
+                        <option value="FOB">FOB (Free on Board — SAIL Chartering)</option>
+                        <option value="CFR">CFR (Cost & Freight — Supplier Chartering)</option>
+                        <option value="CIF">CIF (Cost, Insurance & Freight)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-slate-700 font-bold mb-1">Total Target Budget (₹ Crore)</label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        required
+                        value={budgetCrore}
+                        onChange={(e) => setBudgetCrore(e.target.value)}
+                        placeholder="165.0"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 font-mono font-bold text-orange-600"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-slate-700 font-bold mb-1">Daily Demurrage Rate ($/Day USD)</label>
+                      <input
+                        type="number"
+                        value={demurrageRateUsdDay}
+                        onChange={(e) => setDemurrageRateUsdDay(e.target.value)}
+                        placeholder="15000"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-slate-700 font-bold mb-1">Max Vessel Age Limit (Years)</label>
+                      <input
+                        type="number"
+                        value={maxVesselAgeYears}
+                        onChange={(e) => setMaxVesselAgeYears(e.target.value)}
+                        placeholder="15"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-slate-700 font-bold mb-1">Vessel Fuel & Engine Spec</label>
+                      <select
+                        value={fuelType}
+                        onChange={(e) => setFuelType(e.target.value)}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 font-mono text-[11px]"
+                      >
+                        <option value="VLSFO (Very Low Sulfur Fuel Oil - $640/MT)">VLSFO (Very Low Sulfur Fuel Oil - $640/MT)</option>
+                        <option value="HFO (Heavy Fuel Oil + Scrubber - $480/MT)">HFO (Heavy Fuel Oil + Scrubber - $480/MT)</option>
+                        <option value="LNG Dual-Fuel Engine ($760/MT)">LNG Dual-Fuel Engine ($760/MT)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-slate-700 font-bold mb-1">IMO Carbon CII Rating Requirement</label>
+                      <select
+                        value={esgCiiGrade}
+                        onChange={(e) => setEsgCiiGrade(e.target.value)}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 font-mono text-[11px]"
+                      >
+                        <option value="GRADE_A">Grade A (High Efficiency Compliant)</option>
+                        <option value="GRADE_B">Grade B (Standard Compliance)</option>
+                        <option value="GRADE_C">Grade C (Permissible Baseline)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-700 font-bold mb-1">Special Chartering Terms & Governance Notes</label>
+                    <textarea
+                      rows={2}
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      placeholder="e.g. Requires 24-hour notice before laycan entry. Vessel must have active P&I Club cover."
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 font-sans focus:outline-none focus:border-orange-500"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-slate-700 font-semibold mb-1">Destination Discharge Port</label>
-                  <select
-                    value={destinationPortId}
-                    onChange={(e) => setDestinationPortId(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 focus:outline-none focus:border-orange-500 font-mono"
-                  >
-                    {ports.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.name} ({p.country})
-                      </option>
-                    ))}
-                  </select>
+              )}
+
+              {/* Modal Footer Controls */}
+              <div className="pt-4 flex items-center justify-between border-t border-slate-200 font-mono">
+                <div className="text-[11px] text-slate-500">
+                  Step {modalTab === 'CARGO' ? '1' : modalTab === 'OPERATIONS' ? '2' : '3'} of 3
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-slate-700 font-semibold mb-1">Vessel Fuel & Engine Specification</label>
-                <select
-                  value={fuelType}
-                  onChange={(e) => setFuelType(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 focus:outline-none focus:border-orange-500 font-mono"
-                >
-                  <option value="VLSFO (Very Low Sulfur Fuel Oil - $640/MT)">VLSFO (Very Low Sulfur Fuel Oil - $640/MT)</option>
-                  <option value="HFO (Heavy Fuel Oil + Scrubber - $480/MT)">HFO (Heavy Fuel Oil + Scrubber - $480/MT)</option>
-                  <option value="LNG Dual-Fuel Engine ($760/MT)">LNG Dual-Fuel Engine ($760/MT)</option>
-                </select>
-              </div>
+                <div className="flex items-center space-x-2 font-sans">
+                  {modalTab !== 'CARGO' && (
+                    <button
+                      type="button"
+                      onClick={() => setModalTab(modalTab === 'COMMERCIAL' ? 'OPERATIONS' : 'CARGO')}
+                      className="px-4 py-2 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-xl font-bold transition-all cursor-pointer"
+                    >
+                      Back
+                    </button>
+                  )}
 
-              <div>
-                <label className="block text-slate-700 font-semibold mb-1">Required Delivery <GlossaryTerm termId="laycan">Laycan</GlossaryTerm> Window</label>
-                <input
-                  type="date"
-                  required
-                  value={deliveryDate}
-                  onChange={(e) => setDeliveryDate(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 focus:outline-none focus:border-orange-500 font-mono"
-                />
-              </div>
-
-              <div className="pt-2 flex items-center justify-end space-x-3 border-t border-slate-200">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 bg-slate-100 text-slate-600 hover:text-slate-900 rounded-xl font-medium cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-xl shadow-xs cursor-pointer"
-                >
-                  {submitting ? 'Creating in Firestore...' : 'Submit Procurement Plan'}
-                </button>
+                  {modalTab !== 'COMMERCIAL' ? (
+                    <button
+                      type="button"
+                      onClick={() => setModalTab(modalTab === 'CARGO' ? 'OPERATIONS' : 'COMMERCIAL')}
+                      className="px-5 py-2 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-xl shadow-sm transition-all cursor-pointer"
+                    >
+                      Next Step →
+                    </button>
+                  ) : (
+                    <button
+                      type="submit"
+                      disabled={submitting}
+                      className="px-6 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl shadow-md transition-all cursor-pointer disabled:opacity-50"
+                    >
+                      {submitting ? 'Creating Specification...' : 'Submit Enterprise Plan ✓'}
+                    </button>
+                  )}
+                </div>
               </div>
             </form>
           </div>
