@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useFirestoreCollection } from '../hooks/useFirestore';
-import { runFirebaseAnalysisPipeline } from '../lib/firebaseAnalysisEngine';
+import { api } from '../lib/api';
 import { seedFirestoreIfEmpty } from '../lib/firebaseSeed';
 import { collection, addDoc, doc, setDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
@@ -30,7 +30,6 @@ import {
   Layers,
   ArrowRight,
   Radio,
-  Key,
   Fuel,
   Flame,
   Check,
@@ -54,12 +53,6 @@ export const ProcurementPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<any | null>(null);
 
-  // Gemini API Key State
-  const [userGeminiKey, setUserGeminiKey] = useState<string>(() => {
-    return localStorage.getItem('freightiq_gemini_key') || '';
-  });
-  const [showKeyConfig, setShowKeyConfig] = useState(false);
-
   // View Mode: Simple vs Advanced
   const [viewMode, setViewMode] = useState<'SIMPLE' | 'ADVANCED'>(() => {
     return (localStorage.getItem('freightiq_proc_mode') as any) || 'SIMPLE';
@@ -74,7 +67,7 @@ export const ProcurementPage: React.FC = () => {
   // Pipeline Loading State
   const [analyzingId, setAnalyzingId] = useState<string | null>(null);
   const [analysisStage, setAnalysisStage] = useState<number>(0);
-  const [analysisReport, setAnalysisReport] = useState<any | null>(null);
+  const [analysisReport, setAnalysisReport] = useState<FullAnalysisReport | null>(null);
 
   // Lineage Disclosure Toggle
   const [showLineage, setShowLineage] = useState(false);
@@ -102,11 +95,6 @@ export const ProcurementPage: React.FC = () => {
       setSelectedPlan(requests[0]);
     }
   }, [requests]);
-
-  const handleSaveGeminiKey = (key: string) => {
-    setUserGeminiKey(key);
-    localStorage.setItem('freightiq_gemini_key', key);
-  };
 
   const handleToggleViewMode = (mode: 'SIMPLE' | 'ADVANCED') => {
     setViewMode(mode);
@@ -155,28 +143,22 @@ export const ProcurementPage: React.FC = () => {
     setAnalysisStage(1);
     setAnalysisReport(null);
 
-    const timer1 = setTimeout(() => setAnalysisStage(2), 350);
-    const timer2 = setTimeout(() => setAnalysisStage(3), 700);
-    const timer3 = setTimeout(() => setAnalysisStage(4), 1050);
-    const timer4 = setTimeout(() => setAnalysisStage(5), 1400);
-    const timer5 = setTimeout(() => setAnalysisStage(6), 1750);
+    const timer1 = setTimeout(() => setAnalysisStage(2), 400);
+    const timer2 = setTimeout(() => setAnalysisStage(4), 800);
+    const timer3 = setTimeout(() => setAnalysisStage(6), 1200);
 
     try {
-      const report = await runFirebaseAnalysisPipeline(req.id, userGeminiKey);
-      setTimeout(() => {
-        setAnalysisReport(report);
-        setAnalyzingId(null);
-        setAnalysisStage(0);
-      }, 2100);
+      const res = await api.post<FullAnalysisReport>(`/procurement/requests/${req.id}/analyze`);
+      setAnalysisReport(res.data);
     } catch (err: any) {
-      alert('Analysis pipeline execution failed');
-      setAnalyzingId(null);
-      setAnalysisStage(0);
+      const msg = err.response?.data?.message || err.message || 'Analysis pipeline execution failed';
+      alert(`Decision Engine Pipeline Failed: ${msg}`);
+    } finally {
       clearTimeout(timer1);
       clearTimeout(timer2);
       clearTimeout(timer3);
-      clearTimeout(timer4);
-      clearTimeout(timer5);
+      setAnalyzingId(null);
+      setAnalysisStage(0);
     }
   };
 
@@ -199,28 +181,15 @@ export const ProcurementPage: React.FC = () => {
             </h1>
             <span className="px-2.5 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] font-mono rounded-full font-bold flex items-center gap-1 border border-emerald-300">
               <Radio className="w-3 h-3 text-emerald-600 animate-pulse" />
-              <span>FIREBASE REAL-TIME SYNC</span>
+              <span>PYTHON + NESTJS ENGINE ACTIVE</span>
             </span>
           </div>
           <p className="text-xs text-slate-500 font-mono mt-0.5">
-            Firestore Database • Gemini AI Reasoning, Fuel Price Comparison & Vessel Constraints
+            NestJS Backend API • Python XGBoost Decision Engine • Server-Side Gemini AI
           </p>
         </div>
 
         <div className="flex items-center space-x-3">
-          {/* Gemini API Key Configuration Toggle */}
-          <button
-            onClick={() => setShowKeyConfig((prev) => !prev)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold font-mono flex items-center space-x-1.5 border cursor-pointer ${
-              userGeminiKey
-                ? 'bg-purple-50 text-purple-900 border-purple-300'
-                : 'bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200'
-            }`}
-          >
-            <Key className="w-3.5 h-3.5 text-purple-600" />
-            <span>{userGeminiKey ? 'Gemini Key Configured ✓' : 'Configure Gemini API Key'}</span>
-          </button>
-
           {/* Simple vs Advanced Mode Toggle */}
           <div className="flex rounded-lg bg-slate-100 p-1 font-mono text-xs border border-slate-200">
             <button
@@ -260,41 +229,6 @@ export const ProcurementPage: React.FC = () => {
           </button>
         </div>
       </div>
-
-      {/* Inline Gemini API Key Drawer */}
-      {showKeyConfig && (
-        <div className="p-4 bg-purple-50/80 border border-purple-200 rounded-xl space-y-3 text-xs font-mono animate-in fade-in print:hidden">
-          <div className="flex items-center justify-between">
-            <div className="font-bold text-purple-900 flex items-center gap-1.5">
-              <Brain className="w-4 h-4 text-purple-600" />
-              <span>Google Gemini API Key Configuration</span>
-            </div>
-            <button onClick={() => setShowKeyConfig(false)} className="text-slate-400 hover:text-slate-600">
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-          <p className="text-purple-800 text-[11px] font-sans">
-            Paste your Google Gemini API Key below (`AIzaSy...`). When configured, clicking "Analyze & Optimize" queries Gemini 1.5 Flash live to synthesize recommendations!
-          </p>
-          <div className="flex gap-2">
-            <input
-              type="password"
-              placeholder="Paste GEMINI_API_KEY (e.g. AIzaSy...)"
-              value={userGeminiKey}
-              onChange={(e) => handleSaveGeminiKey(e.target.value)}
-              className="flex-1 bg-white border border-purple-300 rounded-lg px-3 py-2 text-slate-900 focus:outline-none focus:border-purple-600 font-mono text-xs"
-            />
-            {userGeminiKey && (
-              <button
-                onClick={() => handleSaveGeminiKey('')}
-                className="px-3 py-2 bg-rose-100 text-rose-800 hover:bg-rose-200 rounded-lg font-bold text-xs cursor-pointer"
-              >
-                Clear Key
-              </button>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* Procurement Plans Master Table (Live Firestore Streamed) */}
       <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xs print:hidden">
@@ -383,32 +317,50 @@ export const ProcurementPage: React.FC = () => {
       {analyzingId && (
         <div className="p-6 bg-white border border-orange-300 rounded-xl shadow-lg space-y-4 font-mono animate-in fade-in print:hidden">
           <div className="flex items-center justify-between">
+      {/* Staged Pipeline Loading Visualizer Overlay */}
+      {analyzingId && (
+        <div className="p-6 bg-white border border-orange-300 rounded-xl shadow-lg space-y-4 font-mono animate-in fade-in print:hidden">
+          <div className="flex items-center justify-between">
             <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-india-saffron animate-spin" />
-              <span>Executing 6-Stage Analytical & AI Reasoning Pipeline</span>
+              <span>Executing Python Decision Engine & Server-Side AI Pipeline...</span>
             </h3>
             <span className="text-xs text-orange-600 font-bold">Stage {analysisStage} of 6</span>
           </div>
 
-          <div className="grid grid-cols-6 gap-2 text-[10px]">
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-2 text-[10px]">
             <div className={`p-2 rounded border transition-all ${analysisStage >= 1 ? 'bg-orange-100 border-orange-400 text-orange-900 font-bold' : 'bg-slate-50 border-slate-200 text-slate-400'}`}>
-              1. ML Forecast
+              1. XGBoost Forecast
             </div>
             <div className={`p-2 rounded border transition-all ${analysisStage >= 2 ? 'bg-orange-100 border-orange-400 text-orange-900 font-bold' : 'bg-slate-50 border-slate-200 text-slate-400'}`}>
-              2. Port Constraints
+              2. Draft & LOA Constraints
             </div>
             <div className={`p-2 rounded border transition-all ${analysisStage >= 3 ? 'bg-orange-100 border-orange-400 text-orange-900 font-bold' : 'bg-slate-50 border-slate-200 text-slate-400'}`}>
-              3. Contract Strategy
+              3. COA Strategy Comparison
             </div>
             <div className={`p-2 rounded border transition-all ${analysisStage >= 4 ? 'bg-orange-100 border-orange-400 text-orange-900 font-bold' : 'bg-slate-50 border-slate-200 text-slate-400'}`}>
               4. Idle Repositioning
             </div>
             <div className={`p-2 rounded border transition-all ${analysisStage >= 5 ? 'bg-orange-100 border-orange-400 text-orange-900 font-bold' : 'bg-slate-50 border-slate-200 text-slate-400'}`}>
-              5. Composite Risk
+              5. Composite 4D Risk
             </div>
             <div className={`p-2 rounded border transition-all ${analysisStage >= 6 ? 'bg-purple-100 border-purple-400 text-purple-900 font-bold' : 'bg-slate-50 border-slate-200 text-slate-400'}`}>
-              6. Gemini AI Layer
+              6. Gemini AI Rationale
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* PIPELINE EXECUTION ERROR CARD */}
+      {analysisError && (
+        <div className="p-4 bg-rose-50 border border-rose-300 rounded-xl text-rose-900 text-xs font-mono space-y-2 animate-in fade-in print:hidden">
+          <div className="font-bold flex items-center gap-2 text-rose-800 text-sm font-sans">
+            <AlertCircle className="w-5 h-5 text-rose-600" />
+            <span>Decision Engine Analysis Failed</span>
+          </div>
+          <div>{analysisError}</div>
+          <div className="text-[11px] text-rose-700 font-sans pt-1">
+            Ensure Python Decision Engine service is running on port 8000 (`python main.py` in `apps/decision-engine`).
           </div>
         </div>
       )}
@@ -480,6 +432,109 @@ export const ProcurementPage: React.FC = () => {
               )}
             </div>
           </div>
+
+          {/* ACTIVE RISK ALERTS SURFACED FROM RISK ENGINE */}
+          {analysisReport.riskAnalysis?.activeAlerts && analysisReport.riskAnalysis.activeAlerts.length > 0 && (
+            <div className="space-y-2">
+              <div className="text-xs font-bold text-slate-800 font-sans flex items-center gap-1.5">
+                <ShieldAlert className="w-4 h-4 text-amber-600" />
+                <span>Active Operational Risk Alerts & Early Warnings ({analysisReport.riskAnalysis.riskLevel} RISK - {analysisReport.riskAnalysis.compositeRiskScore}/100)</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                {analysisReport.riskAnalysis.activeAlerts.map((alertText: string, idx: number) => (
+                  <div key={idx} className="p-3 bg-amber-50/90 border border-amber-300 rounded-xl text-amber-900 text-xs font-mono flex items-start space-x-2 shadow-2xs">
+                    <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                    <span className="font-semibold">{alertText}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* WHY THIS RECOMMENDATION DETAILED EXPLAINABILITY PANEL */}
+          {(() => {
+            const recStrat = analysisReport.contractStrategies?.find((s) => s.isRecommended) || analysisReport.contractStrategies?.[0];
+            if (!recStrat) return null;
+            return (
+              <div className="p-5 bg-gradient-to-r from-orange-500/10 via-amber-500/10 to-emerald-500/10 border border-orange-300 rounded-xl space-y-3 font-sans shadow-xs">
+                <div className="flex items-center justify-between">
+                  <div className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                    <CheckCircle2 className="w-5 h-5 text-orange-600" />
+                    <span>Why {recStrat.title} Is Recommended</span>
+                  </div>
+                  <span className="px-3 py-1 bg-orange-600 text-white text-xs font-mono font-bold rounded-lg shadow-xs">
+                    Rate Lock: ${recStrat.rateUsdPerMt}/MT • Est. Outlay: ${recStrat.estimatedTotalCostUsd?.toLocaleString()}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-800 leading-relaxed font-mono bg-white/95 p-3.5 rounded-lg border border-orange-200">
+                  {recStrat.reasoning}
+                </p>
+              </div>
+            );
+          })()}
+
+          {/* ML MODEL SELECTION & BACKTESTING COMPARISON TABLE */}
+          {analysisReport.forecast?.modelMetrics && (
+            <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center space-x-2">
+                  <TrendingUp className="w-5 h-5 text-blue-600" />
+                  <div>
+                    <h2 className="text-sm font-bold text-slate-900 font-sans tracking-wide">
+                      ML Freight Forecasting Model Benchmark & Walk-Forward Evaluation
+                    </h2>
+                    <div className="text-xs font-mono text-slate-500">
+                      Route: <span className="font-bold text-slate-800">{analysisReport.forecast.route}</span> • Primary Model: <span className="font-bold text-emerald-700">{analysisReport.forecast.selectedModel}</span>
+                    </div>
+                  </div>
+                </div>
+                <span className="px-2.5 py-0.5 bg-blue-100 text-blue-800 text-[10px] font-mono font-bold rounded-full border border-blue-300">
+                  TREND: {analysisReport.forecast.trendDirection} ({analysisReport.forecast.trendMagnitudePct}%)
+                </span>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs font-mono">
+                  <thead className="bg-slate-50 border-b border-slate-200 text-[10px] text-slate-500 uppercase">
+                    <tr>
+                      <th className="py-3 px-4">Candidate Model</th>
+                      <th className="py-3 px-4">Algorithm & Feature Set</th>
+                      <th className="py-3 px-4 text-right">MAE (USD/MT)</th>
+                      <th className="py-3 px-4 text-right">MAPE (%)</th>
+                      <th className="py-3 px-4 text-center">Benchmark Result</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {analysisReport.forecast.modelMetrics.map((m: any, idx: number) => (
+                      <tr
+                        key={idx}
+                        className={m.isBest ? 'bg-emerald-50/70 font-bold border-l-4 border-emerald-600' : 'hover:bg-slate-50'}
+                      >
+                        <td className="py-3 px-4 font-sans text-slate-900 flex items-center gap-1.5">
+                          {m.isBest && <Sparkles className="w-3.5 h-3.5 text-emerald-600 shrink-0" />}
+                          <span>{m.modelName}</span>
+                        </td>
+                        <td className="py-3 px-4 text-slate-600">{m.algorithm}</td>
+                        <td className="py-3 px-4 text-right font-bold text-slate-900">${m.mae?.toFixed(2)}</td>
+                        <td className="py-3 px-4 text-right font-bold text-slate-900">{m.mape?.toFixed(1)}%</td>
+                        <td className="py-3 px-4 text-center">
+                          <span
+                            className={`inline-block px-2 py-0.5 text-[9px] rounded font-bold uppercase border ${
+                              m.isBest
+                                ? 'bg-emerald-600 text-white border-emerald-700 shadow-xs'
+                                : 'bg-slate-100 text-slate-600 border-slate-200'
+                            }`}
+                          >
+                            {m.isBest ? 'PRIMARY BEST MODEL ✓' : 'BENCHMARKED'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
 
           {/* WHAT-IF SENSITIVITY SIMULATOR & STRATEGY EVALUATOR CARD */}
           <div className="bg-slate-900 text-slate-100 border border-slate-800 rounded-xl p-5 shadow-lg space-y-4 font-mono">
@@ -616,7 +671,7 @@ export const ProcurementPage: React.FC = () => {
                     Vessel Class Fuel Price & Economic Comparison
                   </h2>
                   <div className="text-xs font-mono text-slate-500">
-                    Bunker Fuel Selected: <span className="font-bold text-slate-800">{analysisReport.fuelType || 'VLSFO'} ($${analysisReport.fuelPricePerMt || 640}/MT)</span>
+                    Bunker Fuel Selected: <span className="font-bold text-slate-800">{(analysisReport as any).fuelType || 'VLSFO'} (${(analysisReport as any).fuelPricePerMt || 640}/MT)</span>
                   </div>
                 </div>
               </div>
@@ -639,11 +694,11 @@ export const ProcurementPage: React.FC = () => {
                   </div>
                   <div className="flex justify-between text-slate-600">
                     <span>Total Bunker Fuel Cost:</span>
-                    <span className="font-bold text-emerald-700">${analysisReport.vesselRecommendations?.[0]?.totalBunkerCostUsd?.toLocaleString() || '250,880'}</span>
+                    <span className="font-bold text-emerald-700">${(analysisReport.vesselRecommendations?.[0] as any)?.totalBunkerCostUsd?.toLocaleString() || '250,880'}</span>
                   </div>
                   <div className="flex justify-between text-slate-600">
                     <span>Rate Per Metric Ton:</span>
-                    <span className="font-bold text-orange-600">${analysisReport.vesselRecommendations?.[0]?.costPerMtUsd || '23.63'} / MT</span>
+                    <span className="font-bold text-orange-600">${(analysisReport.vesselRecommendations?.[0] as any)?.costPerMtUsd || '23.63'} / MT</span>
                   </div>
                   <div className="flex justify-between text-slate-600">
                     <span>Port Draft Status:</span>
@@ -667,11 +722,11 @@ export const ProcurementPage: React.FC = () => {
                   </div>
                   <div className="flex justify-between text-slate-600">
                     <span>Total Bunker Fuel Cost:</span>
-                    <span className="font-bold text-slate-900">${analysisReport.vesselRecommendations?.[1]?.totalBunkerCostUsd?.toLocaleString() || '262,144'}</span>
+                    <span className="font-bold text-slate-900">${(analysisReport.vesselRecommendations?.[1] as any)?.totalBunkerCostUsd?.toLocaleString() || '262,144'}</span>
                   </div>
                   <div className="flex justify-between text-slate-600">
                     <span>Rate Per Metric Ton:</span>
-                    <span className="font-bold text-slate-900">${analysisReport.vesselRecommendations?.[1]?.costPerMtUsd || '25.88'} / MT</span>
+                    <span className="font-bold text-slate-900">${(analysisReport.vesselRecommendations?.[1] as any)?.costPerMtUsd || '25.88'} / MT</span>
                   </div>
                   <div className="flex justify-between text-slate-600">
                     <span>Port Draft Status:</span>
@@ -695,7 +750,7 @@ export const ProcurementPage: React.FC = () => {
                   </div>
                   <div className="flex justify-between text-slate-600">
                     <span>Total Bunker Fuel Cost:</span>
-                    <span className="font-bold text-rose-700">${analysisReport.rejectedVessels?.[0]?.totalBunkerCostUsd?.toLocaleString() || '282,240'}</span>
+                    <span className="font-bold text-rose-700">${(analysisReport.rejectedVessels?.[0] as any)?.totalBunkerCostUsd?.toLocaleString() || '282,240'}</span>
                   </div>
                   <div className="flex justify-between text-slate-600">
                     <span>Port Draft Status:</span>

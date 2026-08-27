@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -38,9 +39,115 @@ class AnalyzeRequest(BaseModel):
     requiredDeliveryDate: str
     budgetInrCrore: float
 
+class ForecastRequest(BaseModel):
+    baseRate: Optional[float] = 18.75
+    originPortName: str
+    destinationPortName: str
+    vesselTypeName: Optional[str] = "Panamax / Kamsarmax"
+    horizonDays: Optional[int] = 90
+
+class ConstraintsRequest(BaseModel):
+    cargoQuantityMt: float
+    originDraftM: float
+    originLengthM: float
+    destinationDraftM: float
+    destinationLengthM: float
+    destinationHandlingMtPerDay: float
+    forecastedBaseRate: float
+    originPortName: Optional[str] = ""
+    destinationPortName: Optional[str] = ""
+
+class StrategyRequest(BaseModel):
+    cargoQuantityMt: float
+    currentSpotRate: float
+    forecastedRate90d: float
+    trendDirection: str
+    trendMagnitudePct: Optional[float] = 9.2
+    volatilityScore: Optional[float] = 45.0
+    turnaroundDays: Optional[float] = 3.0
+
+class RiskRequest(BaseModel):
+    trendMagnitudePct: float
+    turnaroundDays: float
+    destinationPortName: str
+    requiredDeliveryDays: int
+
+class IdleRepositioningRequest(BaseModel):
+    originPortName: str
+    destinationPortName: str
+    vesselCategory: str
+
 @app.get("/")
 def health_check():
     return {"status": "HEALTHY", "engine": "FreightIQ Python Decision Engine v2.0.0"}
+
+@app.post("/forecast")
+def get_forecast(req: ForecastRequest):
+    try:
+        return run_freight_forecast(
+            base_rate=req.baseRate or 18.75,
+            origin_name=req.originPortName,
+            dest_name=req.destinationPortName,
+            vessel_type_name=req.vesselTypeName or "Panamax / Kamsarmax",
+            horizon_days=req.horizonDays or 90
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/constraints")
+def get_constraints(req: ConstraintsRequest):
+    try:
+        return evaluate_vessel_constraints(
+            cargo_quantity_mt=req.cargoQuantityMt,
+            origin_draft_m=req.originDraftM,
+            origin_length_m=req.originLengthM,
+            dest_draft_m=req.destinationDraftM,
+            dest_length_m=req.destinationLengthM,
+            dest_handling_mt_per_day=req.destinationHandlingMtPerDay,
+            forecasted_base_rate=req.forecastedBaseRate,
+            origin_port_name=req.originPortName or "",
+            dest_port_name=req.destinationPortName or ""
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/strategy")
+def get_strategy(req: StrategyRequest):
+    try:
+        return evaluate_contract_strategies(
+            cargo_quantity_mt=req.cargoQuantityMt,
+            current_spot_rate=req.currentSpotRate,
+            forecasted_rate_90d=req.forecastedRate90d,
+            trend_direction=req.trendDirection,
+            trend_magnitude_pct=req.trendMagnitudePct or 9.2,
+            volatility_score=req.volatilityScore or 45.0,
+            turnaround_days=req.turnaroundDays or 3.0
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/risk")
+def get_risk(req: RiskRequest):
+    try:
+        return compute_composite_risk(
+            trend_magnitude_pct=req.trendMagnitudePct,
+            turnaround_days=req.turnaroundDays,
+            dest_port_name=req.destinationPortName,
+            required_delivery_days=req.requiredDeliveryDays
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/idle-repositioning")
+def get_idle_repositioning(req: IdleRepositioningRequest):
+    try:
+        return evaluate_idle_repositioning(
+            origin_port_name=req.originPortName,
+            dest_port_name=req.destinationPortName,
+            vessel_category=req.vesselCategory
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/analyze")
 def analyze_procurement_request(req: AnalyzeRequest):
@@ -109,7 +216,7 @@ def analyze_procurement_request(req: AnalyzeRequest):
         )
 
         # Stage 4: Data-Driven Idle Scenario & Repositioning Options
-        best_vessel_code = constraint_result["feasible"][0]["vesselTypeName"] if constraint_result["feasible"] else "Panamax"
+        best_vessel_code = constraint_result["feasible"][0]["vesselCode"] if constraint_result["feasible"] else "Panamax"
         idle_options = evaluate_idle_repositioning(
             origin_port_name=req.originPortName,
             dest_port_name=req.destinationPortName,
@@ -135,4 +242,6 @@ def analyze_procurement_request(req: AnalyzeRequest):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    port = int(os.getenv("DECISION_ENGINE_PORT", os.getenv("PORT", "8000")))
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
+

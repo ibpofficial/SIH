@@ -1,6 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { AiExplanationService } from '../ai-explanation/ai-explanation.service';
+import { AuditService } from '../audit/audit.service';
 import {
   CreateProcurementRequestSchema,
   CreateProcurementRequestInput,
@@ -11,11 +12,12 @@ import {
 
 @Injectable()
 export class ProcurementService {
-  private readonly pythonEngineUrl = 'http://localhost:8000';
+  private readonly pythonEngineUrl = process.env.PYTHON_ENGINE_URL || 'http://localhost:8000';
 
   constructor(
     private prisma: PrismaService,
-    private aiExplanationService: AiExplanationService
+    private aiExplanationService: AiExplanationService,
+    private auditService: AuditService
   ) {}
 
   async findAll(user: any): Promise<ProcurementRequestDetails[]> {
@@ -137,7 +139,16 @@ export class ProcurementService {
       throw new NotFoundException(`Procurement plan ${id} not found`);
     }
 
-    const payload = {
+    // Task 3: Check for ingested freight rate override in database
+    const latestIngestedRate = await this.prisma.freightRate.findFirst({
+      where: {
+        originPortId: req.originPortId,
+        destinationPortId: req.destinationPortId
+      },
+      orderBy: { rateDate: 'desc' }
+    });
+
+    const payload: any = {
       procurementRequestId: req.id,
       commodity: req.commodity,
       quantityMt: req.quantityMt,
@@ -152,23 +163,38 @@ export class ProcurementService {
       budgetInrCrore: req.budgetInrCrore
     };
 
+    if (latestIngestedRate) {
+      payload.baseRate = latestIngestedRate.rateUsdPerMt;
+    }
+
     let report: FullAnalysisReport;
 
     try {
-      // Call Python Decision Engine Microservice via HTTP
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+
       const pyRes = await fetch(`${this.pythonEngineUrl}/analyze`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
+        signal: controller.signal
       });
+
+      clearTimeout(timeoutId);
+
       if (pyRes.ok) {
         report = (await pyRes.json()) as FullAnalysisReport;
       } else {
-        throw new Error(`Decision engine HTTP ${pyRes.status}`);
+        const errorText = await pyRes.text();
+        throw new ServiceUnavailableException(`Decision engine returned ${pyRes.status}: ${errorText}`);
       }
-    } catch (pyErr) {
-      // Fallback Node-side computation if Python microservice is initializing
-      report = this.runFallbackAnalysis(req, payload);
+    } catch (pyErr: any) {
+      if (pyErr instanceof ServiceUnavailableException) {
+        throw pyErr;
+      }
+      throw new ServiceUnavailableException(
+        `Python decision-engine service unreachable at ${this.pythonEngineUrl}: ${pyErr.message || pyErr}`
+      );
     }
 
     // Stage 6: Synthesize AI Reasoning via Gemini (or fallback)
@@ -179,6 +205,25 @@ export class ProcurementService {
     await this.prisma.procurementRequest.update({
       where: { id },
       data: { status: 'OPTIMIZED' }
+    });
+
+    // Task 2: Log real immutable Audit Event
+    const recStrat = report.contractStrategies.find((s) => s.isRecommended) || report.contractStrategies[0];
+    await this.auditService.logAction({
+      action: 'ANALYSIS_RUN',
+      entityType: 'PROCUREMENT_REQUEST',
+      entityId: id,
+      changesAfter: {
+        commodity: req.commodity,
+        quantityMt: req.quantityMt,
+        route: `${req.originPort.name} → ${req.destinationPort.name}`,
+        selectedModel: report.forecast.selectedModel,
+        recommendedStrategy: recStrat.title,
+        rateUsdPerMt: recStrat.rateUsdPerMt,
+        compositeRiskScore: report.riskAnalysis.compositeRiskScore,
+        riskLevel: report.riskAnalysis.riskLevel,
+        generatedAt: new Date().toISOString()
+      }
     });
 
     return report;

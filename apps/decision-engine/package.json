@@ -1,0 +1,10 @@
+{
+  "name": "freightiq-decision-engine",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "python main.py",
+    "start": "python main.py",
+    "test": "pytest tests/"
+  }
+}

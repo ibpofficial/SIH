@@ -30,6 +30,13 @@ export class ProcurementController {
     return this.procurementService.executeAnalysisPipeline(id);
   }
 
+  @Post(':id/analyze')
+  @HttpCode(HttpStatus.OK)
+  @Roles('ADMIN', 'PROCUREMENT_MANAGER', 'ANALYST')
+  async analyzeAlias(@Param('id') id: string) {
+    return this.procurementService.executeAnalysisPipeline(id);
+  }
+
   @Post('requests/:id/simulate')
   @HttpCode(HttpStatus.OK)
   @Roles('ADMIN', 'PROCUREMENT_MANAGER', 'ANALYST')

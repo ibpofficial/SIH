@@ -14,7 +14,7 @@ export const AuthPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const { login } = useAuthStore();
+  const { setAuth } = useAuthStore();
 
   React.useEffect(() => {
     const fetchOrgs = async () => {
@@ -36,7 +36,7 @@ export const AuthPage: React.FC = () => {
     setLoading(true);
     try {
       const res = await api.post('/auth/login', { email: targetEmail, password: targetPass });
-      login(res.data.user, res.data.accessToken, res.data.refreshToken);
+      setAuth(res.data.user, res.data.accessToken);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Authentication failed.');
     } finally {
@@ -59,7 +59,7 @@ export const AuthPage: React.FC = () => {
           role,
           organizationId
         });
-        login(res.data.user, res.data.accessToken, res.data.refreshToken);
+        setAuth(res.data.user, res.data.accessToken);
       } catch (err: any) {
         setError(err.response?.data?.message || 'Registration failed.');
       } finally {

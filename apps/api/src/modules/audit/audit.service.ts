@@ -5,6 +5,32 @@ import { PrismaService } from '../database/prisma.service';
 export class AuditService {
   constructor(private prisma: PrismaService) {}
 
+  async logAction(data: {
+    userId?: string;
+    action: string;
+    entityType: string;
+    entityId: string;
+    changesBefore?: any;
+    changesAfter?: any;
+  }) {
+    let targetUserId = data.userId;
+    if (!targetUserId) {
+      const u = await this.prisma.user.findFirst();
+      targetUserId = u?.id || 'system-user';
+    }
+
+    return this.prisma.auditLog.create({
+      data: {
+        userId: targetUserId,
+        action: data.action,
+        entityType: data.entityType,
+        entityId: data.entityId,
+        changesBefore: data.changesBefore ? JSON.stringify(data.changesBefore) : null,
+        changesAfter: data.changesAfter ? JSON.stringify(data.changesAfter) : null
+      }
+    });
+  }
+
   async findAll(query: { entityType?: string; userId?: string; limit?: number }) {
     const where: any = {};
     if (query.entityType) {
