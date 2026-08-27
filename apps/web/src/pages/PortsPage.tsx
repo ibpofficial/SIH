@@ -32,7 +32,15 @@ export const PortsPage: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {loading ? (
           <div className="col-span-full py-8 text-center text-slate-400 font-mono text-xs">
-            Streaming ports from Firestore...
+            Streaming ports registry...
+          </div>
+        ) : ports.length === 0 ? (
+          <div className="col-span-full py-12 text-center space-y-3 bg-white border border-slate-200 rounded-xl">
+            <Anchor className="w-12 h-12 text-slate-300 mx-auto" />
+            <div className="text-slate-900 font-bold text-sm">No Ports Registered</div>
+            <p className="text-xs text-slate-500 max-w-md mx-auto font-mono">
+              The port registry stores channel depth constraints (Max Draft) and berth length limits (Max LOA). Use the Data Ingestion Studio to import port CSV feeds.
+            </p>
           </div>
         ) : (
           ports.map((port) => (

@@ -32,7 +32,15 @@ export const VesselsPage: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {loading ? (
           <div className="col-span-full py-8 text-center text-slate-400 font-mono text-xs">
-            Streaming vessel classes from Firestore...
+            Streaming vessel classes from registry...
+          </div>
+        ) : vessels.length === 0 ? (
+          <div className="col-span-full py-12 text-center space-y-3 bg-white border border-slate-200 rounded-xl">
+            <Ship className="w-12 h-12 text-slate-300 mx-auto" />
+            <div className="text-slate-900 font-bold text-sm">No Vessel Classes Registered</div>
+            <p className="text-xs text-slate-500 max-w-md mx-auto font-mono">
+              The vessel class registry contains physical specifications (DWT, Max Draft, LOA) used by constraint solvers. Use the Data Ingestion Studio to import vessel fleet CSV data.
+            </p>
           </div>
         ) : (
           vessels.map((v) => (
