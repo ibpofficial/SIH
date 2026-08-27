@@ -3,9 +3,19 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
   body {
     @apply bg-slate-50/90 text-slate-900 font-sans antialiased overflow-x-hidden;
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11", "ss01", "ss03";
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display tracking-tight;
   }
 
   /* Custom crisp scrollbar for clean light dashboard */
@@ -32,38 +42,107 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Premium Glassmorphic Cards & Elevated Surfaces */
+/* Premium Typography Gradients & Utilities */
+.text-gradient-orange {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #c2410c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-indigo {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 50%, #4338ca 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-emerald {
+  background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Premium Glassmorphic Cards & Elevated Surfaces with Multi-Layer Depth */
 .glass-card {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(226, 232, 240, 0.8);
-  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.9) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.03), 0 6px 24px -4px rgba(15, 23, 42, 0.05), inset 0 1px 0 0 rgba(255, 255, 255, 0.9);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .glass-card:hover {
-  border-color: rgba(203, 213, 225, 0.9);
-  box-shadow: 0 10px 30px -4px rgba(15, 23, 42, 0.08), 0 4px 12px -2px rgba(15, 23, 42, 0.04);
+  border-color: rgba(203, 213, 225, 0.95);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 36px -6px rgba(15, 23, 42, 0.09), 0 6px 16px -2px rgba(15, 23, 42, 0.04), inset 0 1px 0 0 rgba(255, 255, 255, 1);
+}
+
+/* Premium Ultra-Depth Card Surface */
+.card-depth {
+  background: #FFFFFF;
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.02), 0 8px 24px -4px rgba(15, 23, 42, 0.06), inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-depth:hover {
+  transform: translateY(-2px);
+  border-color: rgba(203, 213, 225, 0.95);
+  box-shadow: 0 4px 8px rgba(15, 23, 42, 0.03), 0 16px 40px -8px rgba(15, 23, 42, 0.1), inset 0 1px 0 0 #FFFFFF;
+}
+
+/* Dark Mode Premium Depth Card */
+.card-dark-depth {
+  background: linear-gradient(180deg, #0F172A 0%, #020617 100%);
+  border: 1px solid rgba(51, 65, 85, 0.8);
+  box-shadow: 0 20px 45px -15px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.3), inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-dark-depth:hover {
+  border-color: rgba(100, 116, 139, 0.9);
+  box-shadow: 0 25px 55px -12px rgba(0, 0, 0, 0.65), 0 8px 20px rgba(0, 0, 0, 0.4), inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
 }
 
 .glass-nav {
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
-/* Glowing Accents & Badges */
+/* Glowing Accents & Subtle Micro-animations */
 .glow-orange {
-  box-shadow: 0 0 15px -3px rgba(249, 115, 22, 0.25);
+  box-shadow: 0 0 20px -3px rgba(249, 115, 22, 0.28);
 }
 
 .glow-emerald {
-  box-shadow: 0 0 15px -3px rgba(16, 185, 129, 0.25);
+  box-shadow: 0 0 20px -3px rgba(16, 185, 129, 0.28);
 }
 
 .glow-indigo {
-  box-shadow: 0 0 15px -3px rgba(99, 102, 241, 0.25);
+  box-shadow: 0 0 20px -3px rgba(99, 102, 241, 0.28);
+}
+
+/* Subtle Shimmer Accent Line */
+.shimmer-line {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer-line::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(249, 115, 22, 0.8), transparent);
+  animation: shimmerMove 3.5s infinite linear;
+}
+
+@keyframes shimmerMove {
+  0% { left: -50%; }
+  100% { left: 150%; }
 }
 
 /* Indian Tri-Color Subtle Accent Utilities */
