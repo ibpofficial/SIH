@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../lib/api';
 import { AuditLogItem } from '@freightiq/shared-types';
-import { ShieldCheck, Search, Clock, FileJson, AlertCircle, RefreshCw, Filter } from 'lucide-react';
+import { ShieldCheck, Search, FileJson, AlertCircle, RefreshCw } from 'lucide-react';
 import { Breadcrumbs } from '../components/ui/Breadcrumbs';
 
 export const AuditPage: React.FC = () => {
@@ -109,65 +109,65 @@ export const AuditPage: React.FC = () => {
       <Breadcrumbs activePath="/audit" onNavigate={() => {}} />
 
       {/* Header Banner */}
-      <div className="glass-card rounded-2xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white border border-[#0F1B2E]/10 rounded-xl p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2 font-display">
-            <ShieldCheck className="w-5 h-5 text-indigo-600" />
+          <h1 className="text-xl font-bold tracking-tight text-[#0F1B2E] flex items-center gap-2 font-serif">
+            <ShieldCheck className="w-5 h-5 text-[#2D6A4F]" />
             <span>Governance & Immutable Audit Log Trail</span>
           </h1>
-          <p className="text-xs text-slate-500 font-mono mt-1">
+          <p className="text-xs text-[#3E5871] font-mono mt-1">
             Immutable log of all user mutations, procurement decisions & data commits
           </p>
         </div>
 
         <div className="flex items-center space-x-3">
           <div className="relative">
-            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+            <Search className="w-3.5 h-3.5 text-[#3E5871] absolute left-3 top-2.5" />
             <input
               type="text"
               placeholder="Filter audit logs..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-sans text-slate-900 focus:outline-none focus:border-indigo-500 w-52"
+              className="pl-8 pr-3 py-1.5 bg-[#FAFAF8] border border-[#0F1B2E]/10 rounded-lg text-xs font-sans text-[#0F1B2E] focus:outline-none focus:border-[#A9793A] w-52"
             />
           </div>
 
           <button
             onClick={fetchLogs}
-            className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-mono font-bold flex items-center gap-1.5 border border-slate-300 cursor-pointer transition-colors"
+            className="px-3.5 py-1.5 bg-[#FAFAF8] hover:bg-slate-100 text-[#0F1B2E] rounded-lg text-xs font-mono font-bold flex items-center gap-1.5 border border-[#0F1B2E]/10 cursor-pointer transition-colors"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 text-[#A9793A] ${loading ? 'animate-spin' : ''}`} />
             <span>Refresh</span>
           </button>
         </div>
       </div>
 
       {error && (
-        <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-rose-800 text-xs font-mono flex items-center space-x-2">
-          <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+        <div className="p-4 bg-[#FDF2F2] border border-[#A32D2D]/30 rounded-xl text-[#A32D2D] text-xs font-mono flex items-center space-x-2">
+          <AlertCircle className="w-4 h-4 shrink-0 text-[#A32D2D]" />
           <span>{error}</span>
         </div>
       )}
 
       {loading ? (
-        <div className="p-12 text-center text-slate-400 font-mono text-xs glass-card rounded-2xl">
+        <div className="p-12 text-center text-[#3E5871] font-mono text-xs bg-white border border-[#0F1B2E]/10 rounded-xl">
           Streaming immutable audit trail records...
         </div>
       ) : filteredLogs.length === 0 ? (
-        <div className="p-12 text-center space-y-3 glass-card rounded-2xl">
-          <ShieldCheck className="w-12 h-12 text-slate-300 mx-auto" />
-          <div className="text-slate-900 font-bold text-sm font-sans">No Matching Audit Entries Found</div>
-          <p className="text-xs text-slate-500 max-w-md mx-auto font-sans">
+        <div className="p-12 text-center space-y-3 bg-white border border-[#0F1B2E]/10 rounded-xl">
+          <ShieldCheck className="w-12 h-12 text-[#3E5871] mx-auto" />
+          <div className="text-[#0F1B2E] font-bold text-sm font-serif">No Matching Audit Entries Found</div>
+          <p className="text-xs text-[#3E5871] max-w-md mx-auto font-sans">
             Audit logs are recorded automatically whenever a chartering decision analysis is executed or data is committed. Run an analysis on the Procurement page to generate your first audit record!
           </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 font-mono text-xs">
           {/* Logs List */}
-          <div className="lg:col-span-2 glass-card rounded-2xl overflow-hidden shadow-sm">
+          <div className="lg:col-span-2 bg-white border border-[#0F1B2E]/10 rounded-xl overflow-hidden shadow-xs">
             <div className="overflow-x-auto">
               <table className="w-full text-left">
-                <thead className="bg-slate-50/80 border-b border-slate-200 uppercase text-[10px] text-slate-500">
+                <thead className="bg-[#FAFAF8] border-b border-[#0F1B2E]/10 uppercase text-[10px] text-[#3E5871]">
                   <tr>
                     <th className="py-3.5 px-4">Timestamp</th>
                     <th className="py-3.5 px-4">User</th>
@@ -175,25 +175,25 @@ export const AuditPage: React.FC = () => {
                     <th className="py-3.5 px-4">Entity</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-[#0F1B2E]/10">
                   {filteredLogs.map((log) => (
                     <tr
                       key={log.id}
                       onClick={() => setSelectedLog(log)}
                       className={`cursor-pointer transition-colors ${
-                        selectedLog?.id === log.id ? 'bg-indigo-50/80 border-l-4 border-indigo-600 font-semibold' : 'hover:bg-slate-50/80'
+                        selectedLog?.id === log.id ? 'bg-[#FAF4EB] border-l-4 border-[#A9793A] font-bold' : 'hover:bg-[#FAFAF8]'
                       }`}
                     >
-                      <td className="py-3.5 px-4 text-slate-500 text-[11px]">
+                      <td className="py-3.5 px-4 text-[#3E5871] text-[11px]">
                         {new Date(log.timestamp).toLocaleString()}
                       </td>
-                      <td className="py-3.5 px-4 font-sans font-bold text-slate-900">{log.userEmail || 'system'}</td>
-                      <td className="py-3.5 px-4 font-bold text-indigo-700">
-                        <span className="px-2.5 py-0.5 bg-indigo-50 border border-indigo-200 rounded-full text-[10px]">
+                      <td className="py-3.5 px-4 font-sans font-bold text-[#0F1B2E]">{log.userEmail || 'system'}</td>
+                      <td className="py-3.5 px-4 font-bold text-[#A9793A]">
+                        <span className="px-2.5 py-0.5 bg-[#FAF4EB] border border-[#A9793A]/30 rounded text-[10px]">
                           {log.action}
                         </span>
                       </td>
-                      <td className="py-3.5 px-4 text-slate-600">{log.entityType}</td>
+                      <td className="py-3.5 px-4 text-[#3E5871]">{log.entityType}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -202,22 +202,22 @@ export const AuditPage: React.FC = () => {
           </div>
 
           {/* JSON Diff Inspector */}
-          <div className="glass-card rounded-2xl p-5 shadow-sm space-y-3 font-mono">
-            <h3 className="text-xs font-bold text-slate-900 flex items-center gap-2 font-sans border-b border-slate-100 pb-3">
-              <FileJson className="w-4 h-4 text-indigo-600" />
+          <div className="bg-white border border-[#0F1B2E]/10 rounded-xl p-5 shadow-xs space-y-3 font-mono">
+            <h3 className="text-xs font-bold text-[#0F1B2E] flex items-center gap-2 font-serif border-b border-[#0F1B2E]/10 pb-3">
+              <FileJson className="w-4 h-4 text-[#A9793A]" />
               <span>Mutation Payload Inspector</span>
             </h3>
 
             {selectedLog ? (
               <div className="space-y-3">
                 <div className="space-y-1 text-[11px] font-sans">
-                  <div className="text-slate-500">Entity ID: <strong className="text-slate-800 font-mono">{selectedLog.entityId}</strong></div>
-                  <div className="text-slate-500">Recorded At: <strong className="text-slate-800 font-mono">{new Date(selectedLog.timestamp).toISOString()}</strong></div>
+                  <div className="text-[#3E5871]">Entity ID: <strong className="text-[#0F1B2E] font-mono">{selectedLog.entityId}</strong></div>
+                  <div className="text-[#3E5871]">Recorded At: <strong className="text-[#0F1B2E] font-mono">{new Date(selectedLog.timestamp).toISOString()}</strong></div>
                 </div>
 
                 <div>
-                  <div className="text-[10px] text-indigo-600 font-bold uppercase mb-1 font-sans">Audit Snapshot (Changes After)</div>
-                  <pre className="p-3.5 bg-slate-900 text-slate-100 rounded-xl text-[10px] overflow-x-auto leading-relaxed max-h-96 shadow-inner font-mono">
+                  <div className="text-[10px] text-[#A9793A] font-bold uppercase mb-1 font-sans">Audit Snapshot (Changes After)</div>
+                  <pre className="p-3.5 bg-[#0F1B2E] text-slate-100 rounded-lg text-[10px] overflow-x-auto leading-relaxed max-h-96 shadow-inner font-mono">
                     {typeof selectedLog.changesAfter === 'string'
                       ? selectedLog.changesAfter
                       : JSON.stringify(selectedLog.changesAfter, null, 2)}
@@ -225,7 +225,7 @@ export const AuditPage: React.FC = () => {
                 </div>
               </div>
             ) : (
-              <div className="py-12 text-center text-slate-400 text-xs font-sans">Select an audit log entry to view JSON diff payload</div>
+              <div className="py-12 text-center text-[#3E5871] text-xs font-sans">Select an audit log entry to view JSON diff payload</div>
             )}
           </div>
         </div>
@@ -233,5 +233,3 @@ export const AuditPage: React.FC = () => {
     </div>
   );
 };
-
-

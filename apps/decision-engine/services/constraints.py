@@ -6,13 +6,14 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from services.trade_routes import get_route_details
+from config.freight_baselines import BUNKER_FUEL_BASELINE
 
 VESSEL_CLASSES = [
-    {"id": "handy", "code": "HANDY", "name": "Handysize Bulk Carrier", "capacity": 28000, "draft": 10.2, "length": 170.0, "cost_per_day": 12500},
-    {"id": "handymax", "code": "HANDYMAX", "name": "Handymax Bulk Carrier", "capacity": 45000, "draft": 11.5, "length": 190.0, "cost_per_day": 15000},
-    {"id": "supra", "code": "SUPRA", "name": "Supramax / Ultramax", "capacity": 58000, "draft": 12.8, "length": 200.0, "cost_per_day": 18500},
-    {"id": "panamax", "code": "PANAMAX", "name": "Kamsarmax / Panamax", "capacity": 76500, "draft": 14.2, "length": 225.0, "cost_per_day": 22000},
-    {"id": "cape", "code": "CAPE", "name": "Capesize Heavy Bulk", "capacity": 180000, "draft": 18.5, "length": 295.0, "cost_per_day": 35000}
+    {"id": "handy", "code": "HANDY", "name": "Handysize Bulk Carrier", "capacity": 28000, "draft": 10.2, "length": 170.0, "cost_per_day": 12500, "fuel_tpd": 20.0},
+    {"id": "handymax", "code": "HANDYMAX", "name": "Handymax Bulk Carrier", "capacity": 45000, "draft": 11.5, "length": 190.0, "cost_per_day": 15000, "fuel_tpd": 24.0},
+    {"id": "supra", "code": "SUPRA", "name": "Supramax / Ultramax", "capacity": 58000, "draft": 12.8, "length": 200.0, "cost_per_day": 18500, "fuel_tpd": 26.0},
+    {"id": "panamax", "code": "PANAMAX", "name": "Kamsarmax / Panamax", "capacity": 76500, "draft": 14.2, "length": 225.0, "cost_per_day": 22000, "fuel_tpd": 28.0},
+    {"id": "cape", "code": "CAPE", "name": "Capesize Heavy Bulk", "capacity": 180000, "draft": 18.5, "length": 295.0, "cost_per_day": 35000, "fuel_tpd": 42.0}
 ]
 
 def evaluate_vessel_constraints(
@@ -36,6 +37,9 @@ def evaluate_vessel_constraints(
         route_meta = get_route_details(origin_port_name, dest_port_name)
         transit_days = route_meta["transitDays"]
 
+    bunker_price = BUNKER_FUEL_BASELINE.get("base_price_usd_per_mt", 620.0)
+    anchor_fuel_tpd = BUNKER_FUEL_BASELINE.get("consumption_at_anchor_mt_per_day", 3.5)
+
     feasible = []
     rejected = []
 
@@ -54,7 +58,6 @@ def evaluate_vessel_constraints(
 
         voyages_needed = math.ceil(cargo_quantity_mt / v['capacity'])
         turnaround_days = round(math.ceil(cargo_quantity_mt / dest_handling_mt_per_day) + 0.5, 1)
-        total_voyage_days = transit_days + turnaround_days
 
         # Economies of scale factor for bulk vessel categories
         scale_factor = 1.0
@@ -68,6 +71,12 @@ def evaluate_vessel_constraints(
         effective_rate = forecasted_base_rate * scale_factor
         est_cost_usd = round(cargo_quantity_mt * effective_rate + (turnaround_days * v['cost_per_day']), 2)
 
+        # Real Bunker Fuel Cost computation
+        sea_fuel_tons = transit_days * v['fuel_tpd']
+        port_fuel_tons = turnaround_days * anchor_fuel_tpd
+        total_bunker_cost_usd = round((sea_fuel_tons + port_fuel_tons) * bunker_price * voyages_needed, 2)
+        cost_per_mt_usd = round(est_cost_usd / cargo_quantity_mt, 2) if cargo_quantity_mt > 0 else 0.0
+
         record = {
             "vesselTypeId": v['id'],
             "vesselTypeName": v['name'],
@@ -77,7 +86,9 @@ def evaluate_vessel_constraints(
             "lengthM": v['length'],
             "requiredVoyagesCount": voyages_needed,
             "estimatedTurnaroundDays": turnaround_days,
-            "estimatedCostUsd": est_cost_usd
+            "estimatedCostUsd": est_cost_usd,
+            "totalBunkerCostUsd": total_bunker_cost_usd,
+            "costPerMtUsd": cost_per_mt_usd
         }
 
         if len(rejection_reasons) == 0:

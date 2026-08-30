@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, ArrowRight, X, CheckCircle2, RotateCcw } from 'lucide-react';
+import { Sparkles, ArrowRight, X } from 'lucide-react';
 
 interface OnboardingTourProps {
   isOpen: boolean;
@@ -7,7 +7,7 @@ interface OnboardingTourProps {
   onNavigateToProcurement?: () => void;
 }
 
-export const OnboardingTour: React.FC<OnboardingTourProps> = ({ isOpen, onClose, onNavigateToProcurement }) => {
+export const OnboardingTour: React.FC<OnboardingTourProps> = ({ isOpen, onClose }) => {
   const [currentStep, setCurrentStep] = useState(0);
 
   if (!isOpen) return null;
@@ -57,38 +57,38 @@ export const OnboardingTour: React.FC<OnboardingTourProps> = ({ isOpen, onClose,
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 font-sans animate-in fade-in">
-      <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl space-y-0">
-        <div className="p-4 bg-gradient-to-br from-orange-50 via-white to-emerald-50 border-b border-slate-100 flex items-center justify-between">
+    <div className="fixed inset-0 z-50 bg-[#0F1B2E]/40 backdrop-blur-xs flex items-center justify-center p-4 font-sans animate-in fade-in">
+      <div className="bg-white border border-[#0F1B2E]/10 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl space-y-0">
+        <div className="p-4 bg-[#FAFAF8] border-b border-[#0F1B2E]/10 flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <Sparkles className="w-4 h-4 text-india-saffron" />
-            <span className="font-extrabold text-slate-900 text-xs font-mono uppercase tracking-wider">
+            <Sparkles className="w-4 h-4 text-[#A9793A]" />
+            <span className="font-bold text-[#0F1B2E] text-xs font-mono uppercase tracking-wider">
               Platform Guided Tour • Step {currentStep + 1} of {tourSteps.length}
             </span>
           </div>
-          <button onClick={handleSkip} className="p-1 text-slate-400 hover:text-slate-700 cursor-pointer">
+          <button onClick={handleSkip} className="p-1 text-[#3E5871] hover:text-[#0F1B2E] cursor-pointer">
             <X className="w-4 h-4" />
           </button>
         </div>
 
         <div className="p-6 space-y-4">
-          <h3 className="text-base font-bold text-slate-900">{step.title}</h3>
-          <p className="text-xs text-slate-600 leading-relaxed font-sans">{step.description}</p>
+          <h3 className="text-base font-bold text-[#0F1B2E] font-serif">{step.title}</h3>
+          <p className="text-xs text-[#3E5871] leading-relaxed font-sans">{step.description}</p>
 
-          <div className="pt-2 flex items-center justify-between border-t border-slate-100 text-xs font-mono">
+          <div className="pt-2 flex items-center justify-between border-t border-[#0F1B2E]/10 text-xs font-mono">
             <button
               onClick={handleSkip}
-              className="text-slate-400 hover:text-slate-600 cursor-pointer text-[11px]"
+              className="text-[#3E5871] hover:text-[#0F1B2E] cursor-pointer text-[11px]"
             >
               Skip Tour
             </button>
 
             <button
               onClick={handleNext}
-              className="px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-600 text-white font-bold rounded-lg uppercase tracking-wider shadow-xs cursor-pointer flex items-center space-x-1.5"
+              className="px-4 py-2 bg-[#0F1B2E] hover:bg-[#1A2942] text-white font-bold rounded-lg uppercase tracking-wider shadow-xs cursor-pointer flex items-center space-x-1.5 border border-[#0F1B2E]"
             >
               <span>{step.actionText}</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <ArrowRight className="w-3.5 h-3.5 text-[#A9793A]" />
             </button>
           </div>
         </div>

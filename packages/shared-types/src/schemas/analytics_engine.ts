@@ -44,6 +44,8 @@ export const VesselRecommendationSchema = z.object({
   requiredVoyagesCount: z.number(),
   estimatedTurnaroundDays: z.number(),
   estimatedCostUsd: z.number(),
+  totalBunkerCostUsd: z.number().optional(),
+  costPerMtUsd: z.number().optional(),
   rank: z.number().optional()
 });
 

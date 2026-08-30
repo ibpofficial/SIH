@@ -7,34 +7,35 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    background-color: #FAFAF8;
   }
 
   body {
-    @apply bg-slate-50/90 text-slate-900 font-sans antialiased overflow-x-hidden;
+    @apply bg-[#FAFAF8] text-[#0F1B2E] font-sans antialiased overflow-x-hidden;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11", "ss01", "ss03";
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-display tracking-tight;
+    @apply font-serif tracking-tight text-[#0F1B2E];
   }
 
-  /* Custom crisp scrollbar for clean light dashboard */
+  /* Custom crisp instrument scrollbar */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
 
   ::-webkit-scrollbar-track {
-    background: #F8FAFC;
+    background: #FAFAF8;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #CBD5E1;
+    background: #3E5871;
     border-radius: 9999px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #94A3B8;
+    background: #0F1B2E;
   }
 }
 
@@ -42,116 +43,107 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Premium Typography Gradients & Utilities */
-.text-gradient-orange {
-  background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #c2410c 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+/* User Requested Card & Button Design Theme */
+.card-theme {
+  box-shadow: 2px 2px 20px rgba(0, 0, 0, 0.062);
+  background-color: rgb(255, 255, 255);
 }
 
-.text-gradient-indigo {
-  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 50%, #4338ca 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+.accept-button-theme {
+  height: 32px;
+  padding: 0 16px;
+  background-color: #7b57ff;
+  transition: background-color 0.2s ease;
+  border: none;
+  color: rgb(241, 241, 241);
+  cursor: pointer;
+  font-weight: 600;
+  border-radius: 20px;
 }
 
-.text-gradient-emerald {
-  background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+.accept-button-theme:hover {
+  background-color: #9173ff;
 }
 
-/* Premium Glassmorphic Cards & Elevated Surfaces with Multi-Layer Depth */
-.glass-card {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.9) 100%);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(226, 232, 240, 0.85);
-  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.03), 0 6px 24px -4px rgba(15, 23, 42, 0.05), inset 0 1px 0 0 rgba(255, 255, 255, 0.9);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+.decline-button-theme {
+  height: 32px;
+  padding: 0 16px;
+  background-color: rgb(218, 218, 218);
+  transition: background-color 0.2s ease;
+  color: rgb(46, 46, 46);
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  border-radius: 20px;
 }
 
-.glass-card:hover {
-  border-color: rgba(203, 213, 225, 0.95);
-  transform: translateY(-2px);
-  box-shadow: 0 14px 36px -6px rgba(15, 23, 42, 0.09), 0 6px 16px -2px rgba(15, 23, 42, 0.04), inset 0 1px 0 0 rgba(255, 255, 255, 1);
+.decline-button-theme:hover {
+  background-color: #ebebeb;
 }
 
-/* Premium Ultra-Depth Card Surface */
-.card-depth {
+/* Institutional Flat Instrument Cards */
+.instrument-card {
   background: #FFFFFF;
-  border: 1px solid rgba(226, 232, 240, 0.85);
-  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.02), 0 8px 24px -4px rgba(15, 23, 42, 0.06), inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid rgba(15, 27, 46, 0.08);
+  box-shadow: 2px 2px 20px rgba(0, 0, 0, 0.062);
+  transition: border-color 0.2s ease;
 }
 
-.card-depth:hover {
-  transform: translateY(-2px);
-  border-color: rgba(203, 213, 225, 0.95);
-  box-shadow: 0 4px 8px rgba(15, 23, 42, 0.03), 0 16px 40px -8px rgba(15, 23, 42, 0.1), inset 0 1px 0 0 #FFFFFF;
+.instrument-card:hover {
+  border-color: rgba(15, 27, 46, 0.16);
 }
 
-/* Dark Mode Premium Depth Card */
-.card-dark-depth {
-  background: linear-gradient(180deg, #0F172A 0%, #020617 100%);
-  border: 1px solid rgba(51, 65, 85, 0.8);
-  box-shadow: 0 20px 45px -15px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.3), inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+.hairline-divider {
+  border-bottom: 1px solid rgba(15, 27, 46, 0.08);
 }
 
-.card-dark-depth:hover {
-  border-color: rgba(100, 116, 139, 0.9);
-  box-shadow: 0 25px 55px -12px rgba(0, 0, 0, 0.65), 0 8px 20px rgba(0, 0, 0, 0.4), inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
+/* Formal Charter-Party Document Stamp Badge */
+.stamp-badge {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 2px;
+  border: 1px solid currentColor;
+  box-shadow: inset 0 0 0 1px currentColor;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
-.glass-nav {
-  background: rgba(255, 255, 255, 0.94);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+.stamp-badge-brass {
+  color: #A9793A;
+  background-color: #FAF4EB;
+  border-color: #A9793A;
 }
 
-/* Glowing Accents & Subtle Micro-animations */
-.glow-orange {
-  box-shadow: 0 0 20px -3px rgba(249, 115, 22, 0.28);
+.stamp-badge-feasible {
+  color: #2D6A4F;
+  background-color: #F0F7F4;
+  border-color: #2D6A4F;
 }
 
-.glow-emerald {
-  box-shadow: 0 0 20px -3px rgba(16, 185, 129, 0.28);
+.stamp-badge-rejected {
+  color: #A32D2D;
+  background-color: #FDF2F2;
+  border-color: #A32D2D;
 }
 
-.glow-indigo {
-  box-shadow: 0 0 20px -3px rgba(99, 102, 241, 0.28);
+.stamp-badge-warning {
+  color: #9C6615;
+  background-color: #FFF8E7;
+  border-color: #9C6615;
 }
 
-/* Subtle Shimmer Accent Line */
-.shimmer-line {
-  position: relative;
-  overflow: hidden;
+/* Standardized print CSS for executive memos */
+@media print {
+  body {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+  }
+  .print\:hidden {
+    display: none !important;
+  }
 }
-
-.shimmer-line::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 50%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(249, 115, 22, 0.8), transparent);
-  animation: shimmerMove 3.5s infinite linear;
-}
-
-@keyframes shimmerMove {
-  0% { left: -50%; }
-  100% { left: 150%; }
-}
-
-/* Indian Tri-Color Subtle Accent Utilities */
-.tricolor-stripe {
-  background: linear-gradient(90deg, #FF9933 0%, #FFFFFF 50%, #138808 100%);
-}
-
-.tricolor-badge {
-  background: linear-gradient(135deg, rgba(255,153,51,0.08) 0%, rgba(255,255,255,0.95) 50%, rgba(19,136,8,0.08) 100%);
-  border: 1px solid rgba(255, 153, 51, 0.25);
-}
-

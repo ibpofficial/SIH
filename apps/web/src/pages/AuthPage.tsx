@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { api } from '../lib/api';
-import { Lock, Mail, Building2, User, ArrowRight, ShieldCheck, Flag, Sparkles, Zap, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, Zap } from 'lucide-react';
 
 export const AuthPage: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -69,29 +69,27 @@ export const AuthPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-between font-sans">
-      {/* Indian Tri-Color Accent Line */}
-      <div className="h-1.5 w-full tricolor-stripe shadow-xs" />
+    <div className="min-h-screen bg-[#FAFAF8] text-[#0F1B2E] flex flex-col justify-between font-sans selection:bg-[#7b57ff]/20 selection:text-[#0F1B2E]">
+      <div className="h-1.5 w-full bg-[#7b57ff]" />
 
       <div className="flex-1 flex items-center justify-center p-6">
-        <div className="w-full max-w-lg bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden space-y-0">
+        <div className="w-full max-w-lg card-theme border border-slate-100 rounded-2xl shadow-card-soft overflow-hidden space-y-0">
           {/* Header */}
-          <div className="p-6 bg-gradient-to-br from-orange-50/50 via-white to-emerald-50/50 border-b border-slate-100 text-center space-y-2">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-india-navy to-blue-600 flex items-center justify-center text-white font-extrabold text-lg shadow-md mx-auto">
+          <div className="p-6 bg-[#FAFAF8] border-b border-[#0F1B2E]/10 text-center space-y-2">
+            <div className="w-12 h-12 rounded-2xl bg-[#7b57ff] text-white font-serif font-extrabold text-lg flex items-center justify-center shadow-card-soft mx-auto">
               FIQ
             </div>
-            <h1 className="text-xl font-bold tracking-tight text-slate-900">FreightIQ Platform Access</h1>
-            <p className="text-xs text-slate-500 font-mono flex items-center justify-center gap-1">
-              <Flag className="w-3.5 h-3.5 text-india-saffron" />
-              <span>SIH26006 • Smart India Bulk Chartering Platform</span>
+            <h1 className="text-xl font-bold tracking-tight text-[#0F1B2E] font-serif">FreightIQ Platform Access</h1>
+            <p className="text-xs text-[#3E5871] font-mono">
+              SIH26006 • Smart India Bulk Chartering Platform
             </p>
           </div>
 
           <div className="p-6 space-y-5">
             {/* 1-CLICK INSTANT DEMO LOGIN BUTTONS */}
             <div className="space-y-2">
-              <div className="text-[11px] font-bold text-slate-400 font-mono uppercase tracking-wider flex items-center gap-1">
-                <Zap className="w-3.5 h-3.5 text-india-saffron" />
+              <div className="text-[11px] font-bold text-[#7b57ff] font-mono uppercase tracking-wider flex items-center gap-1">
+                <Zap className="w-3.5 h-3.5 text-[#7b57ff]" />
                 <span>Instant 1-Click Demo Logins (No Password Required)</span>
               </div>
 
@@ -101,13 +99,13 @@ export const AuthPage: React.FC = () => {
                   type="button"
                   onClick={() => executeLogin('manager@freightiq.io')}
                   disabled={loading}
-                  className="p-3 bg-gradient-to-r from-orange-50 to-amber-50 hover:from-orange-100 hover:to-amber-100 border border-orange-200 rounded-xl text-left transition-all cursor-pointer group shadow-xs hover:border-orange-400"
+                  className="p-3.5 bg-[#7b57ff]/10 hover:bg-[#7b57ff]/20 border border-[#7b57ff]/30 rounded-2xl text-left transition-all cursor-pointer group shadow-card-soft"
                 >
-                  <div className="flex items-center justify-between font-sans font-bold text-orange-900">
-                    <span>Chartering Manager</span>
-                    <ArrowRight className="w-3.5 h-3.5 text-orange-600 group-hover:translate-x-0.5 transition-transform" />
+                  <div className="flex items-center justify-between font-sans font-bold text-[#0F1B2E]">
+                    <span>Chartering Director</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-[#7b57ff] group-hover:translate-x-0.5 transition-transform" />
                   </div>
-                  <div className="text-[10px] text-slate-500 mt-0.5">SAIL Procurement Head</div>
+                  <div className="text-[10px] text-[#3E5871] mt-0.5">SAIL Procurement Head</div>
                 </button>
 
                 {/* 1-Click Admin */}
@@ -115,13 +113,13 @@ export const AuthPage: React.FC = () => {
                   type="button"
                   onClick={() => executeLogin('admin@freightiq.io')}
                   disabled={loading}
-                  className="p-3 bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-300 rounded-xl text-left transition-all cursor-pointer group shadow-xs"
+                  className="p-3.5 bg-[#FAFAF8] hover:bg-slate-100 border border-slate-200/80 rounded-2xl text-left transition-all cursor-pointer group shadow-card-soft"
                 >
-                  <div className="flex items-center justify-between font-sans font-bold text-slate-900 group-hover:text-blue-900">
+                  <div className="flex items-center justify-between font-sans font-bold text-[#0F1B2E]">
                     <span>Chief Admin</span>
-                    <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-transform" />
+                    <ArrowRight className="w-3.5 h-3.5 text-[#3E5871] group-hover:translate-x-0.5 transition-transform" />
                   </div>
-                  <div className="text-[10px] text-slate-500 mt-0.5">Full System Access</div>
+                  <div className="text-[10px] text-[#3E5871] mt-0.5">Full System Access</div>
                 </button>
 
                 {/* 1-Click Analyst */}
@@ -129,13 +127,13 @@ export const AuthPage: React.FC = () => {
                   type="button"
                   onClick={() => executeLogin('analyst@freightiq.io')}
                   disabled={loading}
-                  className="p-3 bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 rounded-xl text-left transition-all cursor-pointer group shadow-xs"
+                  className="p-3.5 bg-[#FAFAF8] hover:bg-slate-100 border border-slate-200/80 rounded-2xl text-left transition-all cursor-pointer group shadow-card-soft"
                 >
-                  <div className="flex items-center justify-between font-sans font-bold text-slate-900 group-hover:text-emerald-900">
+                  <div className="flex items-center justify-between font-sans font-bold text-[#0F1B2E]">
                     <span>Freight Analyst</span>
-                    <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-600 group-hover:translate-x-0.5 transition-transform" />
+                    <ArrowRight className="w-3.5 h-3.5 text-[#3E5871] group-hover:translate-x-0.5 transition-transform" />
                   </div>
-                  <div className="text-[10px] text-slate-500 mt-0.5">ML Data & Ingestion</div>
+                  <div className="text-[10px] text-[#3E5871] mt-0.5">ML Data & Ingestion</div>
                 </button>
 
                 {/* 1-Click Auditor */}
@@ -143,38 +141,38 @@ export const AuthPage: React.FC = () => {
                   type="button"
                   onClick={() => executeLogin('viewer@freightiq.io')}
                   disabled={loading}
-                  className="p-3 bg-slate-50 hover:bg-purple-50 border border-slate-200 hover:border-purple-300 rounded-xl text-left transition-all cursor-pointer group shadow-xs"
+                  className="p-3.5 bg-[#FAFAF8] hover:bg-slate-100 border border-slate-200/80 rounded-2xl text-left transition-all cursor-pointer group shadow-card-soft"
                 >
-                  <div className="flex items-center justify-between font-sans font-bold text-slate-900 group-hover:text-purple-900">
+                  <div className="flex items-center justify-between font-sans font-bold text-[#0F1B2E]">
                     <span>Auditor Observer</span>
-                    <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-purple-600 group-hover:translate-x-0.5 transition-transform" />
+                    <ArrowRight className="w-3.5 h-3.5 text-[#3E5871] group-hover:translate-x-0.5 transition-transform" />
                   </div>
-                  <div className="text-[10px] text-slate-500 mt-0.5">Read-Only Observer</div>
+                  <div className="text-[10px] text-[#3E5871] mt-0.5">Read-Only Observer</div>
                 </button>
               </div>
             </div>
 
             {/* Separator */}
             <div className="relative flex py-1 items-center">
-              <div className="flex-grow border-t border-slate-200"></div>
-              <span className="flex-shrink mx-3 text-[10px] font-mono uppercase text-slate-400 font-bold">Or Standard Credentials Login</span>
-              <div className="flex-grow border-t border-slate-200"></div>
+              <div className="flex-grow border-t border-[#0F1B2E]/10"></div>
+              <span className="flex-shrink mx-3 text-[10px] font-mono uppercase text-[#3E5871] font-bold">Or Standard Credentials Login</span>
+              <div className="flex-grow border-t border-[#0F1B2E]/10"></div>
             </div>
 
             {/* Standard Login / Signup Form */}
             <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
               {error && (
-                <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-rose-800 font-medium text-xs">
+                <div className="p-3 bg-[#FDF2F2] border border-[#A32D2D]/30 rounded-xl text-[#A32D2D] font-medium text-xs">
                   {error}
                 </div>
               )}
 
               {/* Mode Selector Toggle */}
-              <div className="flex rounded-lg bg-slate-100 p-1 font-mono text-[11px]">
+              <div className="flex rounded-full bg-[#DADADA]/60 p-1 font-mono text-[11px] border border-slate-200">
                 <button
                   type="button"
                   onClick={() => setIsLogin(true)}
-                  className={`flex-1 py-1.5 rounded-md font-bold transition-all cursor-pointer ${isLogin ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-900'
+                  className={`flex-1 py-1.5 rounded-full font-bold transition-all cursor-pointer ${isLogin ? 'bg-[#7b57ff] text-white shadow-xs' : 'text-[#2E2E2E] hover:text-black'
                     }`}
                 >
                   Sign In
@@ -182,98 +180,51 @@ export const AuthPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsLogin(false)}
-                  className={`flex-1 py-1.5 rounded-md font-bold transition-all cursor-pointer ${!isLogin ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-900'
+                  className={`flex-1 py-1.5 rounded-full font-bold transition-all cursor-pointer ${!isLogin ? 'bg-[#7b57ff] text-white shadow-xs' : 'text-[#2E2E2E] hover:text-black'
                     }`}
                 >
                   Create Account
                 </button>
               </div>
 
-              {!isLogin && (
-                <div>
-                  <label className="block text-slate-700 font-medium mb-1">Full Name</label>
-                  <input
-                    type="text"
-                    required
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    placeholder="e.g. Vikram Sharma"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-900 focus:outline-none focus:border-orange-500"
-                  />
-                </div>
-              )}
-
               <div>
-                <label className="block text-slate-700 font-medium mb-1">Email Address</label>
+                <label className="block text-[#0F1B2E] font-semibold mb-1">Email Address</label>
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="manager@freightiq.io"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-900 focus:outline-none focus:border-orange-500 font-mono"
+                  className="w-full bg-[#FAFAF8] border border-slate-200 rounded-xl px-3.5 py-2 text-[#0F1B2E] focus:outline-none focus:border-[#7b57ff] font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-700 font-medium mb-1">Password</label>
+                <label className="block text-[#0F1B2E] font-semibold mb-1">Password</label>
                 <input
                   type="password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-900 focus:outline-none focus:border-orange-500 font-mono"
+                  className="w-full bg-[#FAFAF8] border border-slate-200 rounded-xl px-3.5 py-2 text-[#0F1B2E] focus:outline-none focus:border-[#7b57ff] font-mono"
                 />
               </div>
-
-              {!isLogin && (
-                <>
-                  <div>
-                    <label className="block text-slate-700 font-medium mb-1">RBAC User Role</label>
-                    <select
-                      value={role}
-                      onChange={(e) => setRole(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-900 focus:outline-none focus:border-orange-500 font-mono"
-                    >
-                      <option value="ADMIN">ADMIN (System Administrator)</option>
-                      <option value="PROCUREMENT_MANAGER">PROCUREMENT_MANAGER (Chartering Manager)</option>
-                      <option value="ANALYST">ANALYST (Freight Analyst)</option>
-                      <option value="VIEWER">VIEWER (Auditor Observer)</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-700 font-medium mb-1">Organization</label>
-                    <select
-                      value={organizationId}
-                      onChange={(e) => setOrganizationId(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-900 focus:outline-none focus:border-orange-500 font-mono"
-                    >
-                      {organizations.map((org) => (
-                        <option key={org.id} value={org.id}>
-                          {org.name} ({org.type})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </>
-              )}
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-2.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold rounded-lg uppercase tracking-wider shadow-md shadow-orange-500/20 cursor-pointer flex items-center justify-center space-x-2"
+                className="accept-button-theme w-full py-3 font-bold rounded-full uppercase tracking-wider shadow-card-soft cursor-pointer flex items-center justify-center space-x-2"
               >
                 <span>{loading ? 'Logging In...' : isLogin ? 'Sign In' : 'Create Demo Account'}</span>
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-4 h-4 text-white" />
               </button>
             </form>
           </div>
         </div>
       </div>
 
-      <footer className="py-4 text-center text-slate-400 text-xs font-mono border-t border-slate-200">
+      <footer className="py-4 text-center text-[#3E5871] text-xs font-mono border-t border-[#0F1B2E]/10 bg-white">
         FreightIQ • Smart India Hackathon PS SIH26006 • East Coast Indian Ports Chartering Decision Platform
       </footer>
     </div>

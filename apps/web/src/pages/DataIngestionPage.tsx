@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { api } from '../lib/api';
-import { Database, Upload, Download, CheckCircle2, AlertCircle, Sparkles, FileText, FileSpreadsheet, Layers, ShieldCheck } from 'lucide-react';
+import { Database, Upload, Download, CheckCircle2, Layers, ShieldCheck } from 'lucide-react';
 import Papa from 'papaparse';
 import { Breadcrumbs } from '../components/ui/Breadcrumbs';
 
@@ -79,7 +79,7 @@ export const DataIngestionPage: React.FC = () => {
       try {
         const res = await api.post('/data-ingestion/upload', payload);
         setJobResult(res.data);
-      } catch (backendErr) {
+      } catch {
         // Client-Side Inspection Fallback
         const rows = parsed.data as any[];
         let valid = 0;
@@ -103,7 +103,7 @@ export const DataIngestionPage: React.FC = () => {
           warningCount: warnings
         });
       }
-    } catch (err: any) {
+    } catch {
       alert('Upload & validation failed');
     } finally {
       setUploading(false);
@@ -115,7 +115,7 @@ export const DataIngestionPage: React.FC = () => {
     try {
       await api.post(`/data-ingestion/commit/${jobResult.id}`);
       setCommitSuccess(true);
-    } catch (err: any) {
+    } catch {
       setCommitSuccess(true);
     }
   };
@@ -132,7 +132,7 @@ export const DataIngestionPage: React.FC = () => {
       link.setAttribute('download', `Validation_Errors_${jobResult.id}.csv`);
       document.body.appendChild(link);
       link.click();
-    } catch (err) {
+    } catch {
       alert('No error records to export');
     }
   };
@@ -142,39 +142,39 @@ export const DataIngestionPage: React.FC = () => {
       <Breadcrumbs activePath="/ingestion" onNavigate={() => {}} />
 
       {/* Title Header */}
-      <div className="glass-card rounded-2xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white border border-[#0F1B2E]/10 rounded-xl p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2 font-display">
-            <Database className="w-5 h-5 text-purple-600" />
+          <h1 className="text-xl font-bold tracking-tight text-[#0F1B2E] flex items-center gap-2 font-serif">
+            <Database className="w-5 h-5 text-[#2C5282]" />
             <span>Data Ingestion Studio (3-Stage Validation Pipeline)</span>
           </h1>
-          <p className="text-xs text-slate-500 font-mono mt-1">
+          <p className="text-xs text-[#3E5871] font-mono mt-1">
             Stage 1: Schema Integrity • Stage 2: Business Rules • Stage 3: Referential Integrity
           </p>
         </div>
 
         {/* Download Sample CSV Templates */}
         <div className="flex items-center space-x-2 font-mono text-xs flex-wrap gap-y-2">
-          <span className="text-[10px] text-slate-400 font-bold uppercase">Sample Templates:</span>
+          <span className="text-[10px] text-[#3E5871] font-bold uppercase">Sample Templates:</span>
           <button
             onClick={() => handleDownloadSample('VESSEL')}
-            className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg border border-slate-300 font-bold cursor-pointer flex items-center gap-1 text-[11px] transition-colors"
+            className="px-2.5 py-1 bg-[#FAFAF8] hover:bg-slate-100 text-[#0F1B2E] rounded border border-[#0F1B2E]/10 font-bold cursor-pointer flex items-center gap-1 text-[11px] transition-colors"
           >
-            <Download className="w-3 h-3 text-purple-600" />
+            <Download className="w-3 h-3 text-[#A9793A]" />
             <span>vessels.csv</span>
           </button>
           <button
             onClick={() => handleDownloadSample('PORT')}
-            className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg border border-slate-300 font-bold cursor-pointer flex items-center gap-1 text-[11px] transition-colors"
+            className="px-2.5 py-1 bg-[#FAFAF8] hover:bg-slate-100 text-[#0F1B2E] rounded border border-[#0F1B2E]/10 font-bold cursor-pointer flex items-center gap-1 text-[11px] transition-colors"
           >
-            <Download className="w-3 h-3 text-purple-600" />
+            <Download className="w-3 h-3 text-[#A9793A]" />
             <span>ports.csv</span>
           </button>
           <button
             onClick={() => handleDownloadSample('FREIGHT_RATE')}
-            className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg border border-slate-300 font-bold cursor-pointer flex items-center gap-1 text-[11px] transition-colors"
+            className="px-2.5 py-1 bg-[#FAFAF8] hover:bg-slate-100 text-[#0F1B2E] rounded border border-[#0F1B2E]/10 font-bold cursor-pointer flex items-center gap-1 text-[11px] transition-colors"
           >
-            <Download className="w-3 h-3 text-purple-600" />
+            <Download className="w-3 h-3 text-[#A9793A]" />
             <span>freight_history.csv</span>
           </button>
         </div>
@@ -182,40 +182,40 @@ export const DataIngestionPage: React.FC = () => {
 
       {/* 3-STAGE PIPELINE INDICATOR */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 font-mono text-xs">
-        <div className="p-3.5 glass-card rounded-xl border-l-4 border-purple-500 space-y-1">
-          <div className="flex items-center justify-between font-bold text-slate-900 font-sans">
+        <div className="p-3.5 bg-white border border-[#0F1B2E]/10 rounded-xl border-l-4 border-[#2C5282] space-y-1 shadow-xs">
+          <div className="flex items-center justify-between font-bold text-[#0F1B2E] font-serif">
             <span>Stage 1: Schema Integrity</span>
-            <Layers className="w-4 h-4 text-purple-600" />
+            <Layers className="w-4 h-4 text-[#2C5282]" />
           </div>
-          <p className="text-[11px] text-slate-500 font-sans">Parses CSV data, headers, column types & required field values.</p>
+          <p className="text-[11px] text-[#3E5871] font-sans">Parses CSV data, headers, column types & required field values.</p>
         </div>
 
-        <div className="p-3.5 glass-card rounded-xl border-l-4 border-indigo-500 space-y-1">
-          <div className="flex items-center justify-between font-bold text-slate-900 font-sans">
+        <div className="p-3.5 bg-white border border-[#0F1B2E]/10 rounded-xl border-l-4 border-[#A9793A] space-y-1 shadow-xs">
+          <div className="flex items-center justify-between font-bold text-[#0F1B2E] font-serif">
             <span>Stage 2: Business Rules</span>
-            <ShieldCheck className="w-4 h-4 text-indigo-600" />
+            <ShieldCheck className="w-4 h-4 text-[#A9793A]" />
           </div>
-          <p className="text-[11px] text-slate-500 font-sans">Verifies draft limits, non-negative values & date range sanity.</p>
+          <p className="text-[11px] text-[#3E5871] font-sans">Verifies draft limits, non-negative values & date range sanity.</p>
         </div>
 
-        <div className="p-3.5 glass-card rounded-xl border-l-4 border-emerald-500 space-y-1">
-          <div className="flex items-center justify-between font-bold text-slate-900 font-sans">
+        <div className="p-3.5 bg-white border border-[#0F1B2E]/10 rounded-xl border-l-4 border-[#2D6A4F] space-y-1 shadow-xs">
+          <div className="flex items-center justify-between font-bold text-[#0F1B2E] font-serif">
             <span>Stage 3: Referential Integrity</span>
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <CheckCircle2 className="w-4 h-4 text-[#2D6A4F]" />
           </div>
-          <p className="text-[11px] text-slate-500 font-sans">Maps foreign keys to registered ports & vessel classes before DB commit.</p>
+          <p className="text-[11px] text-[#3E5871] font-sans">Maps foreign keys to registered ports & vessel classes before DB commit.</p>
         </div>
       </div>
 
       {/* Upload Form Card */}
-      <div className="glass-card rounded-2xl p-6 shadow-sm space-y-4 font-mono text-xs">
+      <div className="bg-white border border-[#0F1B2E]/10 rounded-xl p-6 shadow-xs space-y-4 font-mono text-xs">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-slate-700 font-medium font-sans mb-1.5">Target Entity Registry</label>
+            <label className="block text-[#0F1B2E] font-semibold font-sans mb-1.5">Target Entity Registry</label>
             <select
               value={entityType}
               onChange={(e) => setEntityType(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-900 focus:outline-none focus:border-purple-500 font-sans text-xs"
+              className="w-full bg-[#FAFAF8] border border-[#0F1B2E]/10 rounded-lg px-3 py-2.5 text-[#0F1B2E] focus:outline-none focus:border-[#A9793A] font-sans text-xs"
             >
               <option value="FREIGHT_RATE">FREIGHT_RATE (Time-Series Market Rates)</option>
               <option value="PORT">PORT (Port Specifications)</option>
@@ -225,12 +225,12 @@ export const DataIngestionPage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-slate-700 font-medium font-sans mb-1.5">Upload CSV File</label>
+            <label className="block text-[#0F1B2E] font-semibold font-sans mb-1.5">Upload CSV File</label>
             <input
               type="file"
               accept=".csv"
               onChange={handleFileChange}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-slate-900 focus:outline-none focus:border-purple-500 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-purple-100 file:text-purple-700 hover:file:bg-purple-200 font-sans text-xs"
+              className="w-full bg-[#FAFAF8] border border-[#0F1B2E]/10 rounded-lg px-3 py-1.5 text-[#0F1B2E] focus:outline-none focus:border-[#A9793A] file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-bold file:bg-[#FAF4EB] file:text-[#A9793A] font-sans text-xs"
             />
           </div>
         </div>
@@ -238,25 +238,25 @@ export const DataIngestionPage: React.FC = () => {
         <button
           onClick={handleUploadAndValidate}
           disabled={!file || uploading}
-          className="px-5 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold rounded-xl uppercase tracking-wider shadow-md shadow-purple-600/20 disabled:opacity-50 cursor-pointer flex items-center space-x-2 transition-all font-sans text-xs"
+          className="px-5 py-2.5 bg-[#0F1B2E] hover:bg-[#1A2942] text-white font-bold rounded-lg uppercase tracking-wider shadow-xs disabled:opacity-50 cursor-pointer flex items-center space-x-2 transition-all font-sans text-xs border border-[#0F1B2E]"
         >
-          <Upload className="w-4 h-4" />
+          <Upload className="w-4 h-4 text-[#A9793A]" />
           <span>{uploading ? 'Validating 3-Stage Pipeline...' : 'Run 3-Stage Inspection Pipeline'}</span>
         </button>
       </div>
 
       {/* Validation Results Panel */}
       {jobResult && (
-        <div className="glass-card rounded-2xl p-6 shadow-sm space-y-4 font-mono text-xs animate-in fade-in">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-            <div className="font-bold text-slate-900 font-sans text-sm">
+        <div className="bg-white border border-[#0F1B2E]/10 rounded-xl p-6 shadow-xs space-y-4 font-mono text-xs animate-in fade-in">
+          <div className="flex items-center justify-between border-b border-[#0F1B2E]/10 pb-3">
+            <div className="font-bold text-[#0F1B2E] font-serif text-sm">
               Inspection Report: {jobResult.filename}
             </div>
             <span
-              className={`px-3 py-1 rounded-full font-bold uppercase text-[10px] border ${
+              className={`px-3 py-1 rounded font-bold uppercase text-[10px] border ${
                 jobResult.status === 'VALIDATED'
-                  ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                  : 'bg-amber-100 text-amber-800 border-amber-300'
+                  ? 'bg-[#F0F7F4] text-[#2D6A4F] border-[#2D6A4F]/30'
+                  : 'bg-[#FFF8E7] text-[#9C6615] border-[#9C6615]/30'
               }`}
             >
               {jobResult.status}
@@ -264,21 +264,21 @@ export const DataIngestionPage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
-            <div className="p-3.5 bg-slate-50/80 border border-slate-200 rounded-xl">
-              <div className="text-[10px] text-slate-500 font-bold uppercase font-sans">Total Rows</div>
-              <div className="text-2xl font-extrabold text-slate-900 mt-1 tabular-nums">{jobResult.rowCount}</div>
+            <div className="p-3.5 bg-[#FAFAF8] border border-[#0F1B2E]/10 rounded-lg">
+              <div className="text-[10px] text-[#3E5871] font-bold uppercase font-sans">Total Rows</div>
+              <div className="text-2xl font-bold text-[#0F1B2E] mt-1 tabular-nums font-serif">{jobResult.rowCount}</div>
             </div>
-            <div className="p-3.5 bg-emerald-50/80 border border-emerald-200 rounded-xl text-emerald-900">
-              <div className="text-[10px] text-emerald-700 font-bold uppercase font-sans">Valid Rows</div>
-              <div className="text-2xl font-extrabold text-emerald-700 mt-1 tabular-nums">{jobResult.validRowCount}</div>
+            <div className="p-3.5 bg-[#F0F7F4] border border-[#2D6A4F]/30 rounded-lg text-[#2D6A4F]">
+              <div className="text-[10px] font-bold uppercase font-sans">Valid Rows</div>
+              <div className="text-2xl font-bold mt-1 tabular-nums font-serif">{jobResult.validRowCount}</div>
             </div>
-            <div className="p-3.5 bg-rose-50/80 border border-rose-200 rounded-xl text-rose-900">
-              <div className="text-[10px] text-rose-700 font-bold uppercase font-sans">Error Count</div>
-              <div className="text-2xl font-extrabold text-rose-700 mt-1 tabular-nums">{jobResult.errorCount}</div>
+            <div className="p-3.5 bg-[#FDF2F2] border border-[#A32D2D]/30 rounded-lg text-[#A32D2D]">
+              <div className="text-[10px] font-bold uppercase font-sans">Error Count</div>
+              <div className="text-2xl font-bold mt-1 tabular-nums font-serif">{jobResult.errorCount}</div>
             </div>
-            <div className="p-3.5 bg-amber-50/80 border border-amber-200 rounded-xl text-amber-900">
-              <div className="text-[10px] text-amber-700 font-bold uppercase font-sans">Warnings</div>
-              <div className="text-2xl font-extrabold text-amber-700 mt-1 tabular-nums">{jobResult.warningCount}</div>
+            <div className="p-3.5 bg-[#FFF8E7] border border-[#9C6615]/30 rounded-lg text-[#9C6615]">
+              <div className="text-[10px] font-bold uppercase font-sans">Warnings</div>
+              <div className="text-2xl font-bold mt-1 tabular-nums font-serif">{jobResult.warningCount}</div>
             </div>
           </div>
 
@@ -286,9 +286,9 @@ export const DataIngestionPage: React.FC = () => {
             {jobResult.errorCount > 0 && (
               <button
                 onClick={handleDownloadErrorsCSV}
-                className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl font-bold flex items-center space-x-2 border border-slate-300 cursor-pointer text-xs"
+                className="px-4 py-2 bg-[#FAFAF8] hover:bg-slate-100 text-[#0F1B2E] rounded-lg font-bold flex items-center space-x-2 border border-[#0F1B2E]/10 cursor-pointer text-xs"
               >
-                <Download className="w-4 h-4 text-rose-600" />
+                <Download className="w-4 h-4 text-[#A32D2D]" />
                 <span>Download Error CSV</span>
               </button>
             )}
@@ -296,9 +296,9 @@ export const DataIngestionPage: React.FC = () => {
             <button
               onClick={handleCommitJob}
               disabled={commitSuccess || jobResult.validRowCount === 0}
-              className="px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold rounded-xl uppercase tracking-wider shadow-md shadow-emerald-600/20 disabled:opacity-50 cursor-pointer flex items-center space-x-2 text-xs transition-all"
+              className="px-5 py-2 bg-[#0F1B2E] hover:bg-[#1A2942] text-white font-bold rounded-lg uppercase tracking-wider shadow-xs disabled:opacity-50 cursor-pointer flex items-center space-x-2 text-xs transition-all border border-[#0F1B2E]"
             >
-              <CheckCircle2 className="w-4 h-4" />
+              <CheckCircle2 className="w-4 h-4 text-[#2D6A4F]" />
               <span>{commitSuccess ? 'Committed to Database ✓' : 'Commit Valid Rows to DB'}</span>
             </button>
           </div>
@@ -307,5 +307,3 @@ export const DataIngestionPage: React.FC = () => {
     </div>
   );
 };
-
-

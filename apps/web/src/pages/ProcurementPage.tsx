@@ -2,11 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { useFirestoreCollection } from '../hooks/useFirestore';
 import { api } from '../lib/api';
 import { seedFirestoreIfEmpty } from '../lib/firebaseSeed';
-import { collection, addDoc, doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { FullAnalysisReport } from '@freightiq/shared-types';
 import { Breadcrumbs } from '../components/ui/Breadcrumbs';
-import { GlossaryTerm } from '../components/ui/GlossaryTerm';
+import { formatUsd, formatInrCrore, formatUsdAndInr } from '../lib/currency';
+import { exportReportToPdf } from '../lib/pdfExporter';
+import { CompassRiskGauge } from '../components/ui/CompassRiskGauge';
+import { CharterStampBadge } from '../components/ui/CharterStampBadge';
 import {
   FileSpreadsheet,
   Plus,
@@ -14,10 +17,8 @@ import {
   X,
   AlertCircle,
   TrendingUp,
-  Anchor,
   Ship,
   ShieldAlert,
-  CheckCircle2,
   AlertTriangle,
   Clock,
   Compass,
@@ -27,27 +28,12 @@ import {
   ChevronUp,
   Brain,
   Info,
-  Layers,
-  ArrowRight,
   Radio,
-  Fuel,
-  Flame,
-  Check,
-  DollarSign,
-  Leaf,
+  FileText,
   Award
 } from 'lucide-react';
 import { ForecastChart } from '../components/analytics/ForecastChart';
 import { PipelineHealthWidget } from '../components/analytics/PipelineHealthWidget';
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer
-} from 'recharts';
 
 export const ProcurementPage: React.FC = () => {
   // Live Firestore Collection Listener
@@ -55,6 +41,7 @@ export const ProcurementPage: React.FC = () => {
   const { data: ports } = useFirestoreCollection<any>('ports');
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isMethodologyModalOpen, setIsMethodologyModalOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<any | null>(null);
 
   // View Mode: Simple vs Advanced
@@ -73,6 +60,8 @@ export const ProcurementPage: React.FC = () => {
   const [analysisStage, setAnalysisStage] = useState<number>(0);
   const [analysisReport, setAnalysisReport] = useState<FullAnalysisReport | null>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [isOfflineDemoMode, setIsOfflineDemoMode] = useState<boolean>(false);
+  const [exportingPdf, setExportingPdf] = useState<boolean>(false);
 
   // Lineage Disclosure Toggle
   const [showLineage, setShowLineage] = useState(false);
@@ -162,10 +151,10 @@ export const ProcurementPage: React.FC = () => {
   };
 
   const generateFallbackAnalysisReport = (req: any): FullAnalysisReport => {
-    const originName = req.originPortName || 'Newcastle AU';
-    const destName = req.destinationPortName || 'Paradip Port';
-    const commodityName = req.commodity || 'Australian Blast Furnace Coking Coal';
-    const qty = req.quantityMt || 180000;
+    const originName = req?.originPortName || 'Newcastle AU';
+    const destName = req?.destinationPortName || 'Paradip Port';
+    const commodityName = req?.commodity || 'Australian Blast Furnace Coking Coal';
+    const qty = req?.quantityMt || 180000;
 
     const mockPoints = [
       { date: '2026-09-01', predictedRate: 29.50, confidenceLower: 27.80, confidenceUpper: 31.20 },
@@ -177,7 +166,7 @@ export const ProcurementPage: React.FC = () => {
     ];
 
     return {
-      procurementRequestId: req.id,
+      procurementRequestId: req?.id || 'req-demo',
       commodity: commodityName,
       quantityMt: qty,
       originPortName: originName,
@@ -208,8 +197,11 @@ export const ProcurementPage: React.FC = () => {
           requiredVoyagesCount: 3,
           estimatedTurnaroundDays: 3.2,
           estimatedCostUsd: 4253400,
+          totalBunkerCostUsd: 250880,
+          costPerMtUsd: 23.63,
           isFeasible: true,
-          rejectionReason: ''
+          rejectionReason: '',
+          rank: 1
         },
         {
           vesselTypeId: 'vt-supra',
@@ -220,8 +212,11 @@ export const ProcurementPage: React.FC = () => {
           requiredVoyagesCount: 4,
           estimatedTurnaroundDays: 4.1,
           estimatedCostUsd: 4658000,
+          totalBunkerCostUsd: 262144,
+          costPerMtUsd: 25.88,
           isFeasible: true,
-          rejectionReason: ''
+          rejectionReason: '',
+          rank: 2
         }
       ],
       rejectedVessels: [
@@ -234,6 +229,8 @@ export const ProcurementPage: React.FC = () => {
           requiredVoyagesCount: 1,
           estimatedTurnaroundDays: 0,
           estimatedCostUsd: 0,
+          totalBunkerCostUsd: 282240,
+          costPerMtUsd: 0,
           isFeasible: false,
           rejectionReason: 'Draft Violation: Required 18.5m exceeds discharge port max depth 14.5m'
         }
@@ -248,6 +245,16 @@ export const ProcurementPage: React.FC = () => {
           volatilityExposureScore: 15,
           isRecommended: true,
           reasoning: `Locks in rate ceiling ($23.63/MT) for ${qty.toLocaleString()} MT of ${commodityName} on ${originName} → ${destName} route before predicted 9.2% market surge.`
+        },
+        {
+          strategyType: 'SHORT_TERM_3M',
+          title: '3-Month Short-Term Charter',
+          rateUsdPerMt: 25.40,
+          estimatedTotalCostUsd: 4572000,
+          voyagesCount: 3,
+          volatilityExposureScore: 42,
+          isRecommended: false,
+          reasoning: `Provides 90-day rate stability but leaves remaining Q4 volume exposed to forecasted upward rate pressures.`
         },
         {
           strategyType: 'SPOT',
@@ -280,14 +287,22 @@ export const ProcurementPage: React.FC = () => {
           estimatedCostUsd: 185000,
           estimatedNetRevenueUsd: 227500,
           recommendedAction: 'High demand for Australian Iron Ore/Coking Coal. 3,400 nm ballast voyage yields +$42,500 net margin vs idling.'
+        },
+        {
+          actionType: 'ALT_CARGO_EMPLOYMENT',
+          optionTitle: 'Short Coastal Trip: Paradip → Haldia Port',
+          vesselCategory: 'Panamax',
+          estimatedCostUsd: 95000,
+          estimatedNetRevenueUsd: 118000,
+          recommendedAction: 'Coastal thermal coal stem provides positive cashflow (+ $23,000) during 8-day laycan wait.'
         }
       ],
       aiExplanation: {
-        recommendationLine: `Execute 6-Month COA Contract for ${qty.toLocaleString()} MT of ${commodityName} to save ₹9.8 Crore.`,
+        recommendationLine: `Execute 6-Month COA Contract for ${qty.toLocaleString()} MT of ${commodityName} to save ₹8.8 Crore.`,
         reasoningParagraph: `XGBoost regression models an UPWARD rate trajectory (+9.2%) driven by rising global demand and VLSFO bunker fuel fluctuation. Securing a 6-Month COA contract shields SAIL from spot market surges while utilizing Panamax carriers compatible with ${destName}'s 14.5m draft channel limit.`,
         caveatsText: 'VLSFO bunker fuel volatility could shift voyage costs by ±3.5%. Monsoon weather patterns may increase port turnaround congestion by 0.8 days.',
         groundedDataSummary: `Grounded in 180-day historical Baltic Dry Index data, 76.5k DWT Panamax class specs, and ${destName} 14.5m draft limit.`,
-        isAiGenerated: true
+        isAiGenerated: false
       },
       generatedAt: new Date().toISOString()
     };
@@ -299,6 +314,7 @@ export const ProcurementPage: React.FC = () => {
     setAnalysisStage(1);
     setAnalysisReport(null);
     setAnalysisError(null);
+    setIsOfflineDemoMode(false);
 
     const timer1 = setTimeout(() => setAnalysisStage(2), 300);
     const timer2 = setTimeout(() => setAnalysisStage(4), 600);
@@ -308,9 +324,10 @@ export const ProcurementPage: React.FC = () => {
       const res = await api.post<FullAnalysisReport>(`/procurement/requests/${req.id}/analyze`);
       setAnalysisReport(res.data);
     } catch (err: any) {
-      console.warn('Backend API server offline on Vercel deployment. Serving analytical fallback report:', err);
-      const fallbackReport = generateFallbackAnalysisReport(req);
-      setAnalysisReport(fallbackReport);
+      console.error('Backend API server unreachable:', err);
+      const msg = err.response?.data?.message || err.message || 'Python Decision Engine / NestJS Backend is unreachable.';
+      setAnalysisError(`Backend API Failure: ${msg}`);
+      setAnalysisReport(null);
     } finally {
       clearTimeout(timer1);
       clearTimeout(timer2);
@@ -320,8 +337,25 @@ export const ProcurementPage: React.FC = () => {
     }
   };
 
-  const handlePrintReport = () => {
-    window.print();
+  const handleViewOfflineDemo = (req?: any) => {
+    const targetReq = req || selectedPlan || (requests && requests[0]) || { id: 'req-demo' };
+    const fallbackReport = generateFallbackAnalysisReport(targetReq);
+    setAnalysisReport(fallbackReport);
+    setIsOfflineDemoMode(true);
+    setAnalysisError(null);
+  };
+
+  const handleExportPdf = async () => {
+    if (!analysisReport) return;
+    setExportingPdf(true);
+    try {
+      await exportReportToPdf('analysis-report-container', analysisReport);
+    } catch (err) {
+      console.error('PDF Export failed, invoking fallback window.print()', err);
+      window.print();
+    } finally {
+      setExportingPdf(false);
+    }
   };
 
   return (
@@ -329,39 +363,58 @@ export const ProcurementPage: React.FC = () => {
       {/* Breadcrumbs */}
       <Breadcrumbs activePath="/procurement" onNavigate={() => {}} requestTitle={selectedPlan?.commodity} />
 
+      {/* Persistent Top Alert Banner when in Offline Demo Mode */}
+      {isOfflineDemoMode && (
+        <div className="bg-[#FFF8E7] text-[#9C6615] px-4 py-2.5 rounded-full font-mono text-xs font-bold flex items-center justify-between border border-[#9C6615]/30 shadow-card-soft print:hidden">
+          <div className="flex items-center space-x-2">
+            <AlertTriangle className="w-4 h-4 text-[#9C6615] shrink-0" />
+            <span>⚠️ DEMO DATA MODE — Displaying offline synthetic demonstration data (not from live backend API)</span>
+          </div>
+          <button
+            onClick={() => {
+              setIsOfflineDemoMode(false);
+              setAnalysisReport(null);
+            }}
+            className="decline-button-theme text-[10px] uppercase font-bold"
+          >
+            Clear Demo Data
+          </button>
+        </div>
+      )}
+
       {/* Title & Action Header */}
-      <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4 print:hidden">
+      <div className="card-theme rounded-2xl p-6 shadow-card-soft border border-slate-100 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 print:hidden">
         <div>
           <div className="flex items-center space-x-2">
-            <h1 className="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
-              <FileSpreadsheet className="w-5 h-5 text-india-saffron" />
+            <h1 className="text-xl font-bold tracking-tight text-[#0F1B2E] font-serif flex items-center gap-2">
+              <FileSpreadsheet className="w-5 h-5 text-[#7b57ff]" />
               <span>Bulk Cargo Chartering & Decision Suite</span>
             </h1>
-            <span className="px-2.5 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] font-mono rounded-full font-bold flex items-center gap-1 border border-emerald-300">
-              <Radio className="w-3 h-3 text-emerald-600 animate-pulse" />
+            <span className="px-3 py-0.5 bg-[#F0F7F4] text-[#2D6A4F] text-[10px] font-mono rounded-full font-bold flex items-center gap-1 border border-[#2D6A4F]/30">
+              <Radio className="w-3 h-3 text-[#2D6A4F] animate-pulse" />
               <span>PYTHON + NESTJS ENGINE ACTIVE</span>
             </span>
           </div>
-          <p className="text-xs text-slate-500 font-mono mt-0.5">
+          <p className="text-xs text-[#3E5871] font-mono mt-0.5">
             NestJS Backend API • Python XGBoost Decision Engine • Server-Side Gemini AI
           </p>
         </div>
 
         <div className="flex items-center space-x-3">
           {/* Simple vs Advanced Mode Toggle */}
-          <div className="flex rounded-lg bg-slate-100 p-1 font-mono text-xs border border-slate-200">
+          <div className="flex rounded-full bg-[#DADADA]/60 p-1 font-mono text-xs border border-slate-200">
             <button
               onClick={() => handleToggleViewMode('SIMPLE')}
-              className={`px-3 py-1 rounded-md font-bold transition-all cursor-pointer ${
-                viewMode === 'SIMPLE' ? 'bg-white text-orange-600 shadow-xs' : 'text-slate-500 hover:text-slate-900'
+              className={`px-3.5 py-1 rounded-full font-bold transition-all cursor-pointer ${
+                viewMode === 'SIMPLE' ? 'bg-[#7b57ff] text-white shadow-xs' : 'text-[#2E2E2E] hover:text-black'
               }`}
             >
               Simple View
             </button>
             <button
               onClick={() => handleToggleViewMode('ADVANCED')}
-              className={`px-3 py-1 rounded-md font-bold transition-all cursor-pointer ${
-                viewMode === 'ADVANCED' ? 'bg-white text-orange-600 shadow-xs' : 'text-slate-500 hover:text-slate-900'
+              className={`px-3.5 py-1 rounded-full font-bold transition-all cursor-pointer ${
+                viewMode === 'ADVANCED' ? 'bg-[#7b57ff] text-white shadow-xs' : 'text-[#2E2E2E] hover:text-black'
               }`}
             >
               Advanced View
@@ -370,19 +423,20 @@ export const ProcurementPage: React.FC = () => {
 
           {analysisReport && (
             <button
-              onClick={handlePrintReport}
-              className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xs font-bold font-mono flex items-center space-x-1.5 border border-slate-300 cursor-pointer"
+              onClick={handleExportPdf}
+              disabled={exportingPdf}
+              className="decline-button-theme text-xs font-bold font-mono flex items-center space-x-1.5 disabled:opacity-50"
             >
-              <Printer className="w-4 h-4 text-slate-600" />
-              <span>Export Executive Summary</span>
+              <Printer className="w-4 h-4 text-[#2E2E2E]" />
+              <span>{exportingPdf ? 'Generating PDF...' : 'Export Memo (PDF)'}</span>
             </button>
           )}
 
           <button
             onClick={() => setIsModalOpen(true)}
-            className="px-4 py-1.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white rounded-lg text-xs font-bold uppercase tracking-wider flex items-center space-x-2 shadow-md shadow-orange-500/20 cursor-pointer"
+            className="accept-button-theme text-xs font-bold uppercase tracking-wider flex items-center space-x-2 shadow-card-soft px-5 py-2.5"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-4 h-4 text-white" />
             <span>New Procurement Plan</span>
           </button>
         </div>
@@ -392,10 +446,10 @@ export const ProcurementPage: React.FC = () => {
       <PipelineHealthWidget />
 
       {/* Procurement Plans Master Table (Live Firestore Streamed) */}
-      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xs print:hidden">
+      <div className="card-theme rounded-2xl overflow-hidden shadow-card-soft border border-slate-100 print:hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs font-mono">
-            <thead className="bg-slate-50 border-b border-slate-200 uppercase text-[10px] text-slate-500">
+            <thead className="bg-[#FAFAF8] border-b border-[#0F1B2E]/10 uppercase text-[10px] text-[#3E5871]">
               <tr>
                 <th className="py-3.5 px-4">Commodity Cargo</th>
                 <th className="py-3.5 px-4">Route (Origin → Destination)</th>
@@ -406,16 +460,16 @@ export const ProcurementPage: React.FC = () => {
                 <th className="py-3.5 px-4 text-center">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-[#0F1B2E]/10">
               {requestsLoading ? (
                 <tr>
-                  <td colSpan={7} className="py-6 text-center text-slate-400 font-mono">
+                  <td colSpan={7} className="py-6 text-center text-[#3E5871] font-mono">
                     Connecting live Firestore stream...
                   </td>
                 </tr>
               ) : requests.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-6 text-center text-slate-400 font-mono">
+                  <td colSpan={7} className="py-6 text-center text-[#3E5871] font-mono">
                     No procurement plans in Firestore. Click "New Procurement Plan" to create one.
                   </td>
                 </tr>
@@ -428,28 +482,28 @@ export const ProcurementPage: React.FC = () => {
                       key={req.id}
                       onClick={() => setSelectedPlan(req)}
                       className={`cursor-pointer transition-colors ${
-                        isSelected ? 'bg-orange-50/60 border-l-4 border-india-saffron' : 'hover:bg-slate-50/80'
+                        isSelected ? 'bg-[#7b57ff]/10 border-l-4 border-[#7b57ff]' : 'hover:bg-[#FAFAF8]'
                       }`}
                     >
-                      <td className="py-3.5 px-4 font-sans font-semibold text-slate-900">{req.commodity}</td>
-                      <td className="py-3.5 px-4 text-blue-700 font-bold">
+                      <td className="py-3.5 px-4 font-sans font-bold text-[#0F1B2E]">{req.commodity}</td>
+                      <td className="py-3.5 px-4 text-[#2C5282] font-bold">
                         {req.originPortName} → {req.destinationPortName}
                       </td>
-                      <td className="py-3.5 px-4 text-right font-bold text-slate-900 tabular-nums">
+                      <td className="py-3.5 px-4 text-right font-bold text-[#0F1B2E] tabular-nums">
                         {req.quantityMt ? req.quantityMt.toLocaleString() : '150,000'} MT
                       </td>
-                      <td className="py-3.5 px-4 text-right text-orange-600 font-bold tabular-nums">
+                      <td className="py-3.5 px-4 text-right text-[#7b57ff] font-bold tabular-nums">
                         ₹{req.budgetInrCrore} Cr
                       </td>
-                      <td className="py-3.5 px-4 text-slate-600 text-[11px] truncate max-w-xs">
+                      <td className="py-3.5 px-4 text-[#3E5871] text-[11px] truncate max-w-xs">
                         {req.fuelType || 'VLSFO ($640/MT)'}
                       </td>
                       <td className="py-3.5 px-4 text-center">
                         <span
-                          className={`inline-block px-2.5 py-0.5 text-[9px] rounded-full font-bold border ${
+                          className={`inline-block px-3 py-0.5 text-[9px] rounded-full font-bold border ${
                             req.status === 'OPTIMIZED'
-                              ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                              : 'bg-amber-100 text-amber-800 border-amber-300'
+                              ? 'bg-[#F0F7F4] text-[#2D6A4F] border-[#2D6A4F]/30'
+                              : 'bg-[#FFF8E7] text-[#9C6615] border-[#9C6615]/30'
                           }`}
                         >
                           {req.status}
@@ -459,7 +513,7 @@ export const ProcurementPage: React.FC = () => {
                         <button
                           onClick={() => handleTriggerAnalysis(req)}
                           disabled={isRunning}
-                          className="px-3.5 py-1.5 bg-gradient-to-r from-orange-500 via-amber-500 to-emerald-600 hover:opacity-95 text-white rounded-lg text-[11px] font-bold inline-flex items-center space-x-1.5 shadow-sm transition-all disabled:opacity-50 cursor-pointer"
+                          className="accept-button-theme text-[11px] font-bold inline-flex items-center space-x-1.5 shadow-card-soft disabled:opacity-50 px-4 py-1.5"
                         >
                           <Sparkles className="w-3.5 h-3.5 text-white" />
                           <span>{isRunning ? 'Analyzing...' : 'Analyze & Optimize'}</span>
@@ -476,32 +530,32 @@ export const ProcurementPage: React.FC = () => {
 
       {/* Staged Pipeline Loading Visualizer Overlay */}
       {analyzingId && (
-        <div className="p-6 bg-white border border-orange-300 rounded-xl shadow-lg space-y-4 font-mono animate-in fade-in print:hidden">
+        <div className="p-6 card-theme border border-[#7b57ff]/40 rounded-2xl shadow-card-soft space-y-4 font-mono animate-in fade-in print:hidden">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-india-saffron animate-spin" />
+            <h3 className="text-sm font-bold text-[#0F1B2E] flex items-center gap-2 font-serif">
+              <Sparkles className="w-4 h-4 text-[#7b57ff] animate-spin" />
               <span>Executing Python Decision Engine & Server-Side AI Pipeline...</span>
             </h3>
-            <span className="text-xs text-orange-600 font-bold">Stage {analysisStage} of 6</span>
+            <span className="text-xs text-[#7b57ff] font-bold">Stage {analysisStage} of 6</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-6 gap-2 text-[10px]">
-            <div className={`p-2 rounded border transition-all ${analysisStage >= 1 ? 'bg-orange-100 border-orange-400 text-orange-900 font-bold' : 'bg-slate-50 border-slate-200 text-slate-400'}`}>
+            <div className={`p-2 rounded-lg border transition-all ${analysisStage >= 1 ? 'bg-[#7b57ff]/10 border-[#7b57ff] text-[#0F1B2E] font-bold' : 'bg-[#FAFAF8] border-[#0F1B2E]/10 text-[#3E5871]'}`}>
               1. XGBoost Forecast
             </div>
-            <div className={`p-2 rounded border transition-all ${analysisStage >= 2 ? 'bg-orange-100 border-orange-400 text-orange-900 font-bold' : 'bg-slate-50 border-slate-200 text-slate-400'}`}>
-              2. Draft & LOA Constraints
+            <div className={`p-2 rounded-lg border transition-all ${analysisStage >= 2 ? 'bg-[#7b57ff]/10 border-[#7b57ff] text-[#0F1B2E] font-bold' : 'bg-[#FAFAF8] border-[#0F1B2E]/10 text-[#3E5871]'}`}>
+              2. Draft & LOA Solver
             </div>
-            <div className={`p-2 rounded border transition-all ${analysisStage >= 3 ? 'bg-orange-100 border-orange-400 text-orange-900 font-bold' : 'bg-slate-50 border-slate-200 text-slate-400'}`}>
-              3. COA Strategy Comparison
+            <div className={`p-2 rounded-lg border transition-all ${analysisStage >= 3 ? 'bg-[#7b57ff]/10 border-[#7b57ff] text-[#0F1B2E] font-bold' : 'bg-[#FAFAF8] border-[#0F1B2E]/10 text-[#3E5871]'}`}>
+              3. COA Strategy Solver
             </div>
-            <div className={`p-2 rounded border transition-all ${analysisStage >= 4 ? 'bg-orange-100 border-orange-400 text-orange-900 font-bold' : 'bg-slate-50 border-slate-200 text-slate-400'}`}>
+            <div className={`p-2 rounded-lg border transition-all ${analysisStage >= 4 ? 'bg-[#7b57ff]/10 border-[#7b57ff] text-[#0F1B2E] font-bold' : 'bg-[#FAFAF8] border-[#0F1B2E]/10 text-[#3E5871]'}`}>
               4. Idle Repositioning
             </div>
-            <div className={`p-2 rounded border transition-all ${analysisStage >= 5 ? 'bg-orange-100 border-orange-400 text-orange-900 font-bold' : 'bg-slate-50 border-slate-200 text-slate-400'}`}>
+            <div className={`p-2 rounded-lg border transition-all ${analysisStage >= 5 ? 'bg-[#7b57ff]/10 border-[#7b57ff] text-[#0F1B2E] font-bold' : 'bg-[#FAFAF8] border-[#0F1B2E]/10 text-[#3E5871]'}`}>
               5. Composite 4D Risk
             </div>
-            <div className={`p-2 rounded border transition-all ${analysisStage >= 6 ? 'bg-purple-100 border-purple-400 text-purple-900 font-bold' : 'bg-slate-50 border-slate-200 text-slate-400'}`}>
+            <div className={`p-2 rounded-lg border transition-all ${analysisStage >= 6 ? 'bg-[#7b57ff]/10 border-[#7b57ff] text-[#0F1B2E] font-bold' : 'bg-[#FAFAF8] border-[#0F1B2E]/10 text-[#3E5871]'}`}>
               6. Gemini AI Rationale
             </div>
           </div>
@@ -510,64 +564,142 @@ export const ProcurementPage: React.FC = () => {
 
       {/* PIPELINE EXECUTION ERROR CARD */}
       {analysisError && (
-        <div className="p-4 bg-rose-50 border border-rose-300 rounded-xl text-rose-900 text-xs font-mono space-y-2 animate-in fade-in print:hidden">
-          <div className="font-bold flex items-center gap-2 text-rose-800 text-sm font-sans">
-            <AlertCircle className="w-5 h-5 text-rose-600" />
-            <span>Decision Engine Analysis Failed</span>
+        <div className="p-5 bg-[#FDF2F2] border border-[#A32D2D]/30 rounded-2xl text-[#A32D2D] text-xs font-mono space-y-3 animate-in fade-in print:hidden shadow-card-soft">
+          <div className="font-bold flex items-center gap-2 text-[#A32D2D] text-sm font-serif">
+            <AlertCircle className="w-5 h-5 text-[#A32D2D] shrink-0" />
+            <span>Decision Engine Microservice Connection Error</span>
           </div>
-          <div>{analysisError}</div>
-          <div className="text-[11px] text-rose-700 font-sans pt-1">
-            Ensure Python Decision Engine service is running on port 8000 (`python main.py` in `apps/decision-engine`).
+          <div className="bg-white p-3.5 rounded-xl border border-[#A32D2D]/20 text-[#A32D2D]">{analysisError}</div>
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-1 font-sans">
+            <span className="text-[11px] text-[#3E5871]">
+              Check Python Decision Engine on port 8000 (`py main.py` in `apps/decision-engine`) and NestJS API on port 4000.
+            </span>
+            <button
+              onClick={() => handleViewOfflineDemo(selectedPlan)}
+              className="accept-button-theme text-xs inline-flex items-center space-x-1.5 shadow-card-soft px-4 py-2"
+            >
+              <Radio className="w-3.5 h-3.5 text-white" />
+              <span>View Offline Demo Data</span>
+            </button>
           </div>
         </div>
       )}
 
       {/* Analytical Results Dashboard Panels */}
       {analysisReport && (
-        <div className="space-y-6 animate-in fade-in">
+        <div id="analysis-report-container" className="space-y-6 animate-in fade-in card-theme p-6 rounded-2xl border border-slate-100 shadow-card-soft">
           {/* TOP REPORT EXPORT ACTION TOOLBAR */}
-          <div className="glass-card rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3 shadow-sm border border-slate-200/80">
+          <div className="rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3 shadow-card-soft border border-slate-100 bg-[#FAFAF8] print:hidden">
             <div className="flex items-center space-x-3">
-              <div className="p-2 bg-orange-50 rounded-xl border border-orange-200">
-                <FileSpreadsheet className="w-5 h-5 text-orange-600" />
+              <div className="p-2 bg-[#7b57ff]/10 rounded-full border border-[#7b57ff]/30">
+                <FileSpreadsheet className="w-5 h-5 text-[#7b57ff]" />
               </div>
               <div>
-                <div className="font-extrabold text-slate-900 text-sm font-sans">Official Decision Recommendation Dossier</div>
-                <div className="text-xs text-slate-500 font-mono">
-                  Plan ID: <span className="font-bold text-slate-800">{analysisReport.procurementRequestId}</span> • Generated: {new Date(analysisReport.generatedAt || Date.now()).toLocaleTimeString()}
+                <div className="font-bold text-[#0F1B2E] text-sm font-serif">Official Decision Recommendation Dossier</div>
+                <div className="text-xs text-[#3E5871] font-mono">
+                  Report ID: <span className="font-bold text-[#0F1B2E]">REQ-{analysisReport.procurementRequestId}-{new Date(analysisReport.generatedAt || Date.now()).getTime().toString(36).toUpperCase()}</span> • Generated: {new Date(analysisReport.generatedAt || Date.now()).toLocaleTimeString()}
                 </div>
               </div>
             </div>
 
             <div className="flex items-center space-x-2">
               <button
-                onClick={() => window.print()}
-                className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold font-sans inline-flex items-center space-x-2 shadow-sm transition-all cursor-pointer"
+                onClick={() => setIsMethodologyModalOpen(true)}
+                className="decline-button-theme text-xs font-bold font-sans inline-flex items-center space-x-1.5 px-4 py-2"
               >
-                <Printer className="w-4 h-4 text-orange-400" />
-                <span>Export Recommendation Memo (PDF)</span>
+                <Info className="w-3.5 h-3.5 text-[#2E2E2E]" />
+                <span>Methodology & Models</span>
+              </button>
+
+              <button
+                onClick={handleExportPdf}
+                disabled={exportingPdf}
+                className="accept-button-theme text-xs font-bold font-sans inline-flex items-center space-x-2 shadow-card-soft disabled:opacity-50 px-5 py-2"
+              >
+                <Printer className="w-4 h-4 text-white" />
+                <span>{exportingPdf ? 'Exporting PDF...' : 'Export Decision Memo (PDF)'}</span>
               </button>
             </div>
           </div>
 
+          {/* PART B1: EXECUTIVE SUMMARY BLOCK AT THE VERY TOP */}
+          {(() => {
+            const recStrat = analysisReport.contractStrategies?.find((s) => s.isRecommended) || analysisReport.contractStrategies?.[0];
+            const spotStrat = analysisReport.contractStrategies?.find((s) => s.strategyType === 'SPOT') || analysisReport.contractStrategies?.[1];
+            const savingsUsd = spotStrat && recStrat ? (spotStrat.estimatedTotalCostUsd - recStrat.estimatedTotalCostUsd) : 1056600;
+
+            return (
+              <div className="bg-[#0F1B2E] text-white rounded-2xl p-6 shadow-card-soft border border-[#0F1B2E] space-y-4 font-sans relative overflow-hidden">
+                <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                  <div className="flex items-center space-x-2">
+                    <Award className="w-6 h-6 text-[#7b57ff] shrink-0" />
+                    <div>
+                      <h2 className="text-base font-bold text-white tracking-tight uppercase font-mono">
+                        SAIL Executive Chartering Recommendation Memo
+                      </h2>
+                      <div className="text-xs text-slate-300 font-mono">
+                        Route: <span className="text-white font-bold">{analysisReport.originPortName} → {analysisReport.destinationPortName}</span> • Cargo: <span className="text-[#7b57ff] font-bold">{analysisReport.quantityMt?.toLocaleString()} MT {analysisReport.commodity}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <CharterStampBadge variant="RECOMMENDED" label="RECOMMENDED STRATEGY READY" />
+                </div>
+
+                {/* 3-Line Big Executive Recommendation Headline */}
+                <div className="text-lg md:text-xl font-bold text-[#7b57ff] leading-snug tracking-tight font-serif">
+                  {analysisReport.aiExplanation?.recommendationLine}
+                </div>
+
+                {/* KPI Summary Cards Grid (Dual Currency USD + ₹ Crore) */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-3 pt-2 font-mono text-xs">
+                  <div className="p-3.5 bg-white/5 border border-white/10 rounded-xl space-y-1">
+                    <div className="text-slate-300 text-[10px] uppercase font-sans">Recommended Charter</div>
+                    <div className="font-bold text-white text-sm truncate">{recStrat?.title || '6-Month COA Contract'}</div>
+                    <div className="text-[#7b57ff] font-bold text-[11px]">${recStrat?.rateUsdPerMt}/MT Lock</div>
+                  </div>
+
+                  <div className="p-3.5 bg-white/5 border border-white/10 rounded-xl space-y-1">
+                    <div className="text-slate-300 text-[10px] uppercase font-sans">Total Estimated Outlay</div>
+                    <div className="font-bold text-white text-sm">{formatUsdAndInr(recStrat?.estimatedTotalCostUsd || 4253400)}</div>
+                    <div className="text-slate-400 text-[10px]">Dual Currency (USD / ₹ Cr)</div>
+                  </div>
+
+                  <div className="p-3.5 bg-white/5 border border-white/10 rounded-xl space-y-1">
+                    <div className="text-slate-300 text-[10px] uppercase font-sans">Est. Savings vs Spot</div>
+                    <div className="font-bold text-emerald-400 text-sm">+{formatUsdAndInr(savingsUsd)}</div>
+                    <div className="text-emerald-300 text-[10px]">Shields against +{analysisReport.forecast?.trendMagnitudePct || 9.2}% surge</div>
+                  </div>
+
+                  <div className="p-3.5 bg-white/5 border border-white/10 rounded-xl space-y-1">
+                    <div className="text-slate-300 text-[10px] uppercase font-sans">Composite Risk Level</div>
+                    <div className="font-bold text-amber-300 text-sm">
+                      {analysisReport.riskAnalysis?.compositeRiskScore}/100 ({analysisReport.riskAnalysis?.riskLevel})
+                    </div>
+                    <div className="text-slate-400 text-[10px]">4-Factor Multi-Score Evaluated</div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
           {/* SECTION 0: GEMINI AI RECOMMENDATION & REASONING SYNTHESIS LAYER */}
-          <div className="bg-gradient-to-br from-purple-50/80 via-white to-orange-50/80 border border-purple-200 rounded-xl p-5 shadow-sm space-y-4">
-            <div className="flex items-center justify-between border-b border-purple-100 pb-3">
+          <div className="card-theme border border-slate-100 rounded-2xl p-5 shadow-card-soft space-y-4">
+            <div className="flex items-center justify-between border-b border-[#0F1B2E]/10 pb-3">
               <div className="flex items-center space-x-2">
-                <Brain className="w-5 h-5 text-purple-700" />
+                <Brain className="w-5 h-5 text-[#7b57ff]" />
                 <div>
-                  <h2 className="text-sm font-bold text-slate-900 font-sans tracking-wide">
+                  <h2 className="text-sm font-bold text-[#0F1B2E] font-serif tracking-wide">
                     Executive AI Recommendation & Reasoning Layer
                   </h2>
-                  <div className="text-[11px] font-mono text-purple-800">
+                  <div className="text-[11px] font-mono text-[#3E5871]">
                     Model: Gemini 1.5 Flash • Grounded Analytical Synthesis
                   </div>
                 </div>
               </div>
 
-              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono border ${
+              <span className={`px-3 py-0.5 rounded-full text-[10px] font-bold font-mono border ${
                 analysisReport.aiExplanation.isAiGenerated
-                  ? 'bg-purple-100 text-purple-900 border-purple-300'
+                  ? 'bg-[#7b57ff]/10 text-[#7b57ff] border-[#7b57ff]/30'
                   : 'bg-slate-100 text-slate-700 border-slate-300'
               }`}>
                 {analysisReport.aiExplanation.isAiGenerated ? '✨ Synthesized live via Google Gemini API' : 'Analytical Fallback Reasoning'}
@@ -575,31 +707,31 @@ export const ProcurementPage: React.FC = () => {
             </div>
 
             {/* 1-Line Recommendation */}
-            <div className="p-3 bg-white border border-purple-200 rounded-lg text-xs font-sans font-bold text-slate-900 flex items-center space-x-2">
-              <Sparkles className="w-4 h-4 text-purple-600 shrink-0" />
+            <div className="p-3.5 bg-[#FAFAF8] border border-slate-200/80 rounded-xl text-xs font-sans font-bold text-[#0F1B2E] flex items-center space-x-2">
+              <Sparkles className="w-4 h-4 text-[#7b57ff] shrink-0" />
               <span>{analysisReport.aiExplanation.recommendationLine}</span>
             </div>
 
             {/* Analytical Reasoning Paragraph */}
-            <div className="text-xs text-slate-700 font-sans leading-relaxed bg-white/80 p-3.5 rounded-lg border border-purple-100">
-              <div className="font-bold text-slate-900 mb-1">Executive Reasoning:</div>
+            <div className="text-xs text-[#0F1B2E] font-sans leading-relaxed bg-[#FAFAF8] p-4 rounded-xl border border-slate-200/80">
+              <div className="font-bold text-[#0F1B2E] mb-1 font-serif">Executive Reasoning:</div>
               {analysisReport.aiExplanation.reasoningParagraph}
             </div>
 
             {/* Honest Caveats */}
-            <div className="p-3 bg-amber-50/60 border border-amber-200 rounded-lg text-amber-900 text-xs font-sans">
-              <div className="font-bold text-amber-900 mb-0.5 flex items-center gap-1">
-                <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+            <div className="p-3.5 bg-[#FFF8E7] border border-[#9C6615]/30 rounded-xl text-[#9C6615] text-xs font-sans">
+              <div className="font-bold text-[#9C6615] mb-0.5 flex items-center gap-1">
+                <AlertTriangle className="w-3.5 h-3.5 text-[#9C6615]" />
                 <span>Operational Caveats & Uncertainty:</span>
               </div>
               <div>{analysisReport.aiExplanation.caveatsText}</div>
             </div>
 
             {/* Expandable Grounded Data Lineage */}
-            <div className="border-t border-purple-100 pt-2 font-mono text-xs">
+            <div className="border-t border-[#0F1B2E]/10 pt-2 font-mono text-xs">
               <button
                 onClick={() => setShowLineage((prev) => !prev)}
-                className="text-[11px] text-purple-700 font-bold hover:text-purple-900 flex items-center gap-1 cursor-pointer"
+                className="text-[11px] text-[#3E5871] font-bold hover:text-[#0F1B2E] flex items-center gap-1 cursor-pointer"
               >
                 <Info className="w-3.5 h-3.5" />
                 <span>{showLineage ? 'Hide Grounded Data Lineage' : 'View Grounded Data Lineage (Traceability Disclosure)'}</span>
@@ -607,53 +739,96 @@ export const ProcurementPage: React.FC = () => {
               </button>
 
               {showLineage && (
-                <div className="mt-2 p-3 bg-slate-900 text-slate-100 rounded-lg text-[10px] leading-relaxed animate-in fade-in">
-                  <div className="font-bold text-purple-300 mb-1">Grounded Decision Engine Inputs Passed Server-Side:</div>
+                <div className="mt-2 p-3.5 bg-[#0F1B2E] text-slate-100 rounded-xl text-[10px] leading-relaxed animate-in fade-in">
+                  <div className="font-bold text-[#7b57ff] mb-1">Grounded Decision Engine Inputs Passed Server-Side:</div>
                   <div>{analysisReport.aiExplanation.groundedDataSummary}</div>
                 </div>
               )}
             </div>
           </div>
 
-          {/* ACTIVE RISK ALERTS SURFACED FROM RISK ENGINE */}
-          {analysisReport.riskAnalysis?.activeAlerts && analysisReport.riskAnalysis.activeAlerts.length > 0 && (
-            <div className="space-y-2">
-              <div className="text-xs font-bold text-slate-800 font-sans flex items-center gap-1.5">
-                <ShieldAlert className="w-4 h-4 text-amber-600" />
-                <span>Active Operational Risk Alerts & Early Warnings ({analysisReport.riskAnalysis.riskLevel} RISK - {analysisReport.riskAnalysis.compositeRiskScore}/100)</span>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {analysisReport.riskAnalysis.activeAlerts.map((alertText: string, idx: number) => (
-                  <div key={idx} className="p-3 bg-amber-50/90 border border-amber-300 rounded-xl text-amber-900 text-xs font-mono flex items-start space-x-2 shadow-2xs">
-                    <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                    <span className="font-semibold">{alertText}</span>
+          {/* PART B2: DETAILED 4-FACTOR RISK ANALYSIS SUB-SCORES BREAKDOWN WITH COMPASS GAUGE */}
+          <div className="card-theme border border-slate-100 rounded-2xl p-5 shadow-card-soft space-y-4">
+            <div className="flex items-center justify-between border-b border-[#0F1B2E]/10 pb-3">
+              <div className="flex items-center space-x-2">
+                <Compass className="w-5 h-5 text-[#7b57ff]" />
+                <div>
+                  <h2 className="text-sm font-bold text-[#0F1B2E] font-serif tracking-wide">
+                    Multi-Factor Operational & Freight Risk Navigation
+                  </h2>
+                  <div className="text-xs font-mono text-[#3E5871]">
+                    Composite Score: <span className="font-bold text-[#0F1B2E]">{analysisReport.riskAnalysis?.compositeRiskScore}/100 ({analysisReport.riskAnalysis?.riskLevel} RISK)</span>
                   </div>
-                ))}
+                </div>
               </div>
             </div>
-          )}
 
-          {/* WHY THIS RECOMMENDATION DETAILED EXPLAINABILITY PANEL */}
-          {(() => {
-            const recStrat = analysisReport.contractStrategies?.find((s) => s.isRecommended) || analysisReport.contractStrategies?.[0];
-            if (!recStrat) return null;
-            return (
-              <div className="p-5 bg-gradient-to-r from-orange-500/10 via-amber-500/10 to-emerald-500/10 border border-orange-300 rounded-xl space-y-3 font-sans shadow-xs">
-                <div className="flex items-center justify-between">
-                  <div className="font-bold text-slate-900 text-sm flex items-center gap-2">
-                    <CheckCircle2 className="w-5 h-5 text-orange-600" />
-                    <span>Why {recStrat.title} Is Recommended</span>
-                  </div>
-                  <span className="px-3 py-1 bg-orange-600 text-white text-xs font-mono font-bold rounded-lg shadow-xs">
-                    Rate Lock: ${recStrat.rateUsdPerMt}/MT • Est. Outlay: ${recStrat.estimatedTotalCostUsd?.toLocaleString()}
-                  </span>
-                </div>
-                <p className="text-xs text-slate-800 leading-relaxed font-mono bg-white/95 p-3.5 rounded-lg border border-orange-200">
-                  {recStrat.reasoning}
-                </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+              {/* Compass Risk Gauge Dial */}
+              <div className="flex justify-center">
+                <CompassRiskGauge
+                  score={analysisReport.riskAnalysis?.compositeRiskScore || 34.2}
+                  riskLevel={analysisReport.riskAnalysis?.riskLevel || 'LOW'}
+                  size="md"
+                />
               </div>
-            );
-          })()}
+
+              {/* 4 Individual Sub-Scores Progress Bars */}
+              <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3 font-mono text-xs">
+                <div className="p-3 bg-[#FAFAF8] border border-slate-200/80 rounded-xl space-y-2">
+                  <div className="flex justify-between text-[#3E5871] text-[11px]">
+                    <span>Freight Volatility</span>
+                    <span className="font-bold text-[#0F1B2E]">{analysisReport.riskAnalysis?.freightVolatilityScore?.toFixed(1)}/100</span>
+                  </div>
+                  <div className="w-full bg-[#E2E8F0] h-2 rounded-full overflow-hidden">
+                    <div
+                      className="bg-[#7b57ff] h-full rounded-full"
+                      style={{ width: `${Math.min(100, analysisReport.riskAnalysis?.freightVolatilityScore || 0)}%` }}
+                    />
+                  </div>
+                </div>
+
+                <div className="p-3 bg-[#FAFAF8] border border-slate-200/80 rounded-xl space-y-2">
+                  <div className="flex justify-between text-[#3E5871] text-[11px]">
+                    <span>Port Congestion</span>
+                    <span className="font-bold text-[#0F1B2E]">{analysisReport.riskAnalysis?.portCongestionScore?.toFixed(1)}/100</span>
+                  </div>
+                  <div className="w-full bg-[#E2E8F0] h-2 rounded-full overflow-hidden">
+                    <div
+                      className="bg-[#9C6615] h-full rounded-full"
+                      style={{ width: `${Math.min(100, analysisReport.riskAnalysis?.portCongestionScore || 0)}%` }}
+                    />
+                  </div>
+                </div>
+
+                <div className="p-3 bg-[#FAFAF8] border border-slate-200/80 rounded-xl space-y-2">
+                  <div className="flex justify-between text-[#3E5871] text-[11px]">
+                    <span>Laycan Deadline Risk</span>
+                    <span className="font-bold text-[#0F1B2E]">{analysisReport.riskAnalysis?.deadlineRiskScore?.toFixed(1)}/100</span>
+                  </div>
+                  <div className="w-full bg-[#E2E8F0] h-2 rounded-full overflow-hidden">
+                    <div
+                      className="bg-[#2C5282] h-full rounded-full"
+                      style={{ width: `${Math.min(100, analysisReport.riskAnalysis?.deadlineRiskScore || 0)}%` }}
+                    />
+                  </div>
+                </div>
+
+                <div className="p-3 bg-[#FAFAF8] border border-slate-200/80 rounded-xl space-y-2">
+                  <div className="flex justify-between text-[#3E5871] text-[11px]">
+                    <span>Market Volatility</span>
+                    <span className="font-bold text-[#0F1B2E]">{analysisReport.riskAnalysis?.marketVolatilityScore?.toFixed(1)}/100</span>
+                  </div>
+                  <div className="w-full bg-[#E2E8F0] h-2 rounded-full overflow-hidden">
+                    <div
+                      className="bg-[#3E5871] h-full rounded-full"
+                      style={{ width: `${Math.min(100, analysisReport.riskAnalysis?.marketVolatilityScore || 0)}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
           {/* INTERACTIVE FREIGHT RATE PREDICTION & BACKTEST SVG CHART */}
           {analysisReport.forecast?.forecastPoints && (
@@ -665,100 +840,91 @@ export const ProcurementPage: React.FC = () => {
             />
           )}
 
-          {/* ML MODEL SELECTION & BACKTESTING COMPARISON TABLE */}
-          {analysisReport.forecast?.modelMetrics && (
-            <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          {/* CONTRACT STRATEGIES COMPARISON SECTION (Part B2 & B3) */}
+          {analysisReport.contractStrategies && analysisReport.contractStrategies.length > 0 && (
+            <div className="card-theme border border-slate-100 rounded-2xl p-5 shadow-card-soft space-y-4">
+              <div className="flex items-center justify-between border-b border-[#0F1B2E]/10 pb-3">
                 <div className="flex items-center space-x-2">
-                  <TrendingUp className="w-5 h-5 text-blue-600" />
+                  <Award className="w-5 h-5 text-[#7b57ff]" />
                   <div>
-                    <h2 className="text-sm font-bold text-slate-900 font-sans tracking-wide">
-                      ML Freight Forecasting Model Benchmark & Walk-Forward Evaluation
+                    <h2 className="text-sm font-bold text-[#0F1B2E] font-serif tracking-wide">
+                      Contract Strategy & Market Entry Evaluation Matrix
                     </h2>
-                    <div className="text-xs font-mono text-slate-500">
-                      Route: <span className="font-bold text-slate-800">{analysisReport.forecast.route}</span> • Primary Model: <span className="font-bold text-emerald-700">{analysisReport.forecast.selectedModel}</span>
+                    <div className="text-xs font-mono text-[#3E5871]">
+                      Comparing COA, Short-Term, and Spot Options
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <span className="px-2.5 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-mono font-bold rounded-full border border-emerald-300 flex items-center gap-1">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-                    <span>RETRAIN ENGINE: ACTIVE (24h Auto-Cycle)</span>
-                  </span>
-                  <span className="px-2.5 py-0.5 bg-blue-100 text-blue-800 text-[10px] font-mono font-bold rounded-full border border-blue-300">
-                    TREND: {analysisReport.forecast.trendDirection} ({analysisReport.forecast.trendMagnitudePct}%)
-                  </span>
-                </div>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs font-mono">
-                  <thead className="bg-slate-50 border-b border-slate-200 text-[10px] text-slate-500 uppercase">
-                    <tr>
-                      <th className="py-3 px-4">Candidate Model</th>
-                      <th className="py-3 px-4">Algorithm & Feature Set</th>
-                      <th className="py-3 px-4 text-right">MAE (USD/MT)</th>
-                      <th className="py-3 px-4 text-right">MAPE (%)</th>
-                      <th className="py-3 px-4 text-center">Benchmark Result</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {analysisReport.forecast.modelMetrics.map((m: any, idx: number) => (
-                      <tr
-                        key={idx}
-                        className={m.isBest ? 'bg-emerald-50/70 font-bold border-l-4 border-emerald-600' : 'hover:bg-slate-50'}
-                      >
-                        <td className="py-3 px-4 font-sans text-slate-900 flex items-center gap-1.5">
-                          {m.isBest && <Sparkles className="w-3.5 h-3.5 text-emerald-600 shrink-0" />}
-                          <span>{m.modelName}</span>
-                        </td>
-                        <td className="py-3 px-4 text-slate-600">{m.algorithm}</td>
-                        <td className="py-3 px-4 text-right font-bold text-slate-900">${m.mae?.toFixed(2)}</td>
-                        <td className="py-3 px-4 text-right font-bold text-slate-900">{m.mape?.toFixed(1)}%</td>
-                        <td className="py-3 px-4 text-center">
-                          <span
-                            className={`inline-block px-2 py-0.5 text-[9px] rounded font-bold uppercase border ${
-                              m.isBest
-                                ? 'bg-emerald-600 text-white border-emerald-700 shadow-xs'
-                                : 'bg-slate-100 text-slate-600 border-slate-200'
-                            }`}
-                          >
-                            {m.isBest ? 'PRIMARY BEST MODEL ✓' : 'BENCHMARKED'}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {analysisReport.contractStrategies.map((strat, idx) => (
+                  <div
+                    key={idx}
+                    className={`p-4 rounded-2xl border space-y-3 flex flex-col justify-between ${
+                      strat.isRecommended
+                        ? 'bg-[#F0F7F4] border-[#2D6A4F] shadow-card-soft'
+                        : 'bg-[#FAFAF8] border-slate-200/80'
+                    }`}
+                  >
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-[#0F1B2E] text-xs font-serif">{strat.title}</span>
+                        {strat.isRecommended && (
+                          <CharterStampBadge variant="FEASIBLE" label="RECOMMENDED" />
+                        )}
+                      </div>
+
+                      <div className="space-y-1 font-mono text-xs">
+                        <div className="flex justify-between text-[#3E5871]">
+                          <span>Freight Rate:</span>
+                          <strong className="text-[#0F1B2E]">${strat.rateUsdPerMt}/MT</strong>
+                        </div>
+                        <div className="flex justify-between text-[#3E5871]">
+                          <span>Est. Total Outlay:</span>
+                          <strong className="text-[#7b57ff]">{formatUsdAndInr(strat.estimatedTotalCostUsd)}</strong>
+                        </div>
+                        <div className="flex justify-between text-[#3E5871]">
+                          <span>Required Voyages:</span>
+                          <strong className="text-[#0F1B2E]">{strat.voyagesCount} Voyages</strong>
+                        </div>
+                      </div>
+
+                      <p className="text-[11px] text-[#3E5871] font-sans leading-relaxed pt-2 border-t border-[#0F1B2E]/10">
+                        {strat.reasoning}
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
 
-          {/* WHAT-IF SENSITIVITY SIMULATOR & STRATEGY EVALUATOR CARD */}
-          <div className="bg-slate-900 text-slate-100 border border-slate-800 rounded-xl p-5 shadow-lg space-y-4 font-mono">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+          {/* WHAT-IF SENSITIVITY SIMULATOR CARD */}
+          <div className="card-theme border border-slate-100 rounded-2xl p-5 shadow-card-soft space-y-4 font-mono">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-[#0F1B2E]/10 pb-3">
               <div className="flex items-center space-x-2">
-                <Sliders className="w-5 h-5 text-orange-400" />
+                <Sliders className="w-5 h-5 text-[#7b57ff]" />
                 <div>
-                  <h2 className="text-sm font-bold text-white font-sans tracking-wide">
-                    🔥 What-If Sensitivity Simulator & Multi-Strategy Engine
+                  <h2 className="text-sm font-bold text-[#0F1B2E] font-serif tracking-wide">
+                    What-If Sensitivity Simulator & Multi-Strategy Engine
                   </h2>
-                  <div className="text-[11px] text-slate-400">
+                  <div className="text-[11px] text-[#3E5871]">
                     Adjust market variables dynamically to recalculate chartering costs and risk ratings
                   </div>
                 </div>
               </div>
 
               {/* Strategy Selector Pills */}
-              <div className="flex rounded-lg bg-slate-800 p-1 text-xs border border-slate-700">
+              <div className="flex rounded-full bg-[#DADADA]/60 p-1 text-xs border border-slate-200">
                 {(['BALANCED', 'CHEAPEST', 'SAFEST', 'FASTEST'] as const).map((strat) => (
                   <button
                     key={strat}
                     onClick={() => setSelectedStrategy(strat)}
-                    className={`px-3 py-1 rounded-md font-bold transition-all cursor-pointer ${
+                    className={`px-3.5 py-1 rounded-full font-bold transition-all cursor-pointer ${
                       selectedStrategy === strat
-                        ? 'bg-orange-500 text-white shadow-xs'
-                        : 'text-slate-400 hover:text-white'
+                        ? 'bg-[#7b57ff] text-white shadow-xs'
+                        : 'text-[#2E2E2E] hover:text-black'
                     }`}
                   >
                     {strat}
@@ -769,11 +935,10 @@ export const ProcurementPage: React.FC = () => {
 
             {/* Sliders Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-              {/* Freight Rate Shift Slider */}
-              <div className="p-3 bg-slate-800/80 rounded-lg border border-slate-700 space-y-2">
-                <div className="flex justify-between text-slate-300">
+              <div className="p-3.5 bg-[#FAFAF8] rounded-xl border border-slate-200/80 space-y-2">
+                <div className="flex justify-between text-[#3E5871]">
                   <span>Freight Rate Impact:</span>
-                  <span className="font-bold text-orange-400">{whatIfFreightRatePct > 0 ? `+${whatIfFreightRatePct}%` : `${whatIfFreightRatePct}%`}</span>
+                  <span className="font-bold text-[#7b57ff]">{whatIfFreightRatePct > 0 ? `+${whatIfFreightRatePct}%` : `${whatIfFreightRatePct}%`}</span>
                 </div>
                 <input
                   type="range"
@@ -782,15 +947,14 @@ export const ProcurementPage: React.FC = () => {
                   step="5"
                   value={whatIfFreightRatePct}
                   onChange={(e) => setWhatIfFreightRatePct(Number(e.target.value))}
-                  className="w-full accent-orange-500 cursor-pointer"
+                  className="w-full accent-[#7b57ff] cursor-pointer"
                 />
               </div>
 
-              {/* Bunker Fuel Surcharge Slider */}
-              <div className="p-3 bg-slate-800/80 rounded-lg border border-slate-700 space-y-2">
-                <div className="flex justify-between text-slate-300">
+              <div className="p-3.5 bg-[#FAFAF8] rounded-xl border border-slate-200/80 space-y-2">
+                <div className="flex justify-between text-[#3E5871]">
                   <span>Bunker Fuel Surcharge:</span>
-                  <span className="font-bold text-amber-400">{whatIfFuelPricePct > 0 ? `+${whatIfFuelPricePct}%` : `${whatIfFuelPricePct}%`}</span>
+                  <span className="font-bold text-[#9C6615]">{whatIfFuelPricePct > 0 ? `+${whatIfFuelPricePct}%` : `${whatIfFuelPricePct}%`}</span>
                 </div>
                 <input
                   type="range"
@@ -799,15 +963,14 @@ export const ProcurementPage: React.FC = () => {
                   step="5"
                   value={whatIfFuelPricePct}
                   onChange={(e) => setWhatIfFuelPricePct(Number(e.target.value))}
-                  className="w-full accent-amber-500 cursor-pointer"
+                  className="w-full accent-[#9C6615] cursor-pointer"
                 />
               </div>
 
-              {/* Port Congestion Delay Slider */}
-              <div className="p-3 bg-slate-800/80 rounded-lg border border-slate-700 space-y-2">
-                <div className="flex justify-between text-slate-300">
+              <div className="p-3.5 bg-[#FAFAF8] rounded-xl border border-slate-200/80 space-y-2">
+                <div className="flex justify-between text-[#3E5871]">
                   <span>Port Congestion Delay:</span>
-                  <span className="font-bold text-emerald-400">+{whatIfPortDelayDays} Days</span>
+                  <span className="font-bold text-[#2D6A4F]">+{whatIfPortDelayDays} Days</span>
                 </div>
                 <input
                   type="range"
@@ -816,295 +979,74 @@ export const ProcurementPage: React.FC = () => {
                   step="1"
                   value={whatIfPortDelayDays}
                   onChange={(e) => setWhatIfPortDelayDays(Number(e.target.value))}
-                  className="w-full accent-emerald-500 cursor-pointer"
+                  className="w-full accent-[#2D6A4F] cursor-pointer"
                 />
               </div>
             </div>
 
-            {/* Recalculated Strategy Output Banner */}
+            {/* Recalculated Strategy Output Banner (Dual Currency) */}
             {(() => {
-              const baseCostInr = selectedPlan?.budgetInrCrore || 98.0;
+              const baseCostUsd = analysisReport.contractStrategies?.[0]?.estimatedTotalCostUsd || 4253400;
               const rateFactor = 1 + whatIfFreightRatePct / 100;
               const fuelFactor = 1 + whatIfFuelPricePct / 100;
               const stratMultiplier = selectedStrategy === 'CHEAPEST' ? 0.94 : selectedStrategy === 'SAFEST' ? 1.05 : selectedStrategy === 'FASTEST' ? 1.08 : 1.0;
               
-              const recalculatedCost = (baseCostInr * rateFactor * ((fuelFactor + 1) / 2) * stratMultiplier).toFixed(2);
-              const savings = (105.0 - parseFloat(recalculatedCost)).toFixed(2);
+              const recalculatedUsd = baseCostUsd * rateFactor * ((fuelFactor + 1) / 2) * stratMultiplier;
+              const savingsUsd = 5310000 - recalculatedUsd;
               const riskVal = selectedStrategy === 'SAFEST' ? 'Low (28/100)' : selectedStrategy === 'CHEAPEST' ? 'Moderate (58/100)' : selectedStrategy === 'FASTEST' ? 'Moderate (52/100)' : 'Low (34/100)';
 
               return (
-                <div className="p-3 bg-slate-800 border border-slate-700 rounded-lg flex flex-wrap items-center justify-between text-xs gap-3">
+                <div className="p-4 bg-[#FAFAF8] border border-slate-200/80 rounded-xl flex flex-wrap items-center justify-between text-xs gap-3">
                   <div className="flex items-center space-x-2">
-                    <span className="text-orange-400 font-bold font-sans">Active Strategy: {selectedStrategy}</span>
-                    <span className="text-slate-400">•</span>
-                    <span className="text-slate-300">Fleet: <strong className="text-white">3 × Panamax Carriers</strong></span>
+                    <span className="text-[#0F1B2E] font-bold font-sans">Active Strategy: {selectedStrategy}</span>
+                    <span className="text-[#3E5871]">•</span>
+                    <span className="text-[#3E5871]">Fleet: <strong className="text-[#0F1B2E]">3 × Panamax Carriers</strong></span>
                   </div>
 
                   <div className="flex items-center space-x-4">
                     <div>
-                      <span className="text-slate-400">Recalculated Cost: </span>
-                      <strong className="text-orange-400 text-sm">₹{recalculatedCost} Cr</strong>
+                      <span className="text-[#3E5871]">Recalculated Outlay: </span>
+                      <strong className="text-[#7b57ff] text-xs font-bold">{formatUsdAndInr(recalculatedUsd)}</strong>
                     </div>
                     <div>
-                      <span className="text-slate-400">Est. Savings: </span>
-                      <strong className="text-emerald-400">₹{savings} Cr</strong>
-                    </div>
-                    <div>
-                      <span className="text-slate-400">Risk Profile: </span>
-                      <strong className="text-amber-300">{riskVal}</strong>
+                      <span className="text-[#3E5871]">Est. Savings: </span>
+                      <strong className="text-[#2D6A4F] text-xs font-bold">{formatUsdAndInr(savingsUsd)}</strong>
                     </div>
                   </div>
                 </div>
               );
             })()}
           </div>
-
-          {/* DETAILED VESSEL FUEL PRICE & CONSUMPTION COMPARISON CARD */}
-          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div className="flex items-center space-x-2">
-                <Fuel className="w-5 h-5 text-orange-600" />
-                <div>
-                  <h2 className="text-sm font-bold text-slate-900 font-sans tracking-wide">
-                    Vessel Class Fuel Price & Economic Comparison
-                  </h2>
-                  <div className="text-xs font-mono text-slate-500">
-                    Bunker Fuel Selected: <span className="font-bold text-slate-800">{(analysisReport as any).fuelType || 'VLSFO'} (${(analysisReport as any).fuelPricePerMt || 640}/MT)</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Side-by-Side Vessel Comparison Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
-              {/* Panamax Card */}
-              <div className="p-4 bg-emerald-50/50 border border-emerald-300 rounded-xl space-y-3 relative">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-slate-900 font-sans text-sm">Panamax Carrier</span>
-                  <span className="px-2 py-0.5 bg-emerald-600 text-white text-[9px] font-bold rounded">
-                    OPTIMAL MATCH
-                  </span>
-                </div>
-                <div className="space-y-1.5 text-[11px]">
-                  <div className="flex justify-between text-slate-600">
-                    <span>Fuel Consumption:</span>
-                    <span className="font-bold text-slate-900">28 MT / day</span>
-                  </div>
-                  <div className="flex justify-between text-slate-600">
-                    <span>Total Bunker Fuel Cost:</span>
-                    <span className="font-bold text-emerald-700">${(analysisReport.vesselRecommendations?.[0] as any)?.totalBunkerCostUsd?.toLocaleString() || '250,880'}</span>
-                  </div>
-                  <div className="flex justify-between text-slate-600">
-                    <span>Rate Per Metric Ton:</span>
-                    <span className="font-bold text-orange-600">${(analysisReport.vesselRecommendations?.[0] as any)?.costPerMtUsd || '23.63'} / MT</span>
-                  </div>
-                  <div className="flex justify-between text-slate-600">
-                    <span>Port Draft Status:</span>
-                    <span className="font-bold text-emerald-700">14.2m (Feasible ✓)</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Supramax Card */}
-              <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-slate-900 font-sans text-sm">Supramax Carrier</span>
-                  <span className="px-2 py-0.5 bg-slate-200 text-slate-700 text-[9px] font-bold rounded">
-                    HIGHER VOYAGES
-                  </span>
-                </div>
-                <div className="space-y-1.5 text-[11px]">
-                  <div className="flex justify-between text-slate-600">
-                    <span>Fuel Consumption:</span>
-                    <span className="font-bold text-slate-900">22 MT / day</span>
-                  </div>
-                  <div className="flex justify-between text-slate-600">
-                    <span>Total Bunker Fuel Cost:</span>
-                    <span className="font-bold text-slate-900">${(analysisReport.vesselRecommendations?.[1] as any)?.totalBunkerCostUsd?.toLocaleString() || '262,144'}</span>
-                  </div>
-                  <div className="flex justify-between text-slate-600">
-                    <span>Rate Per Metric Ton:</span>
-                    <span className="font-bold text-slate-900">${(analysisReport.vesselRecommendations?.[1] as any)?.costPerMtUsd || '25.88'} / MT</span>
-                  </div>
-                  <div className="flex justify-between text-slate-600">
-                    <span>Port Draft Status:</span>
-                    <span className="font-bold text-emerald-700">12.2m (Feasible ✓)</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Capesize Card */}
-              <div className="p-4 bg-rose-50/50 border border-rose-200 rounded-xl space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-slate-900 font-sans text-sm">Capesize Carrier</span>
-                  <span className="px-2 py-0.5 bg-rose-100 text-rose-800 text-[9px] font-bold rounded border border-rose-300">
-                    DRAFT REJECTED
-                  </span>
-                </div>
-                <div className="space-y-1.5 text-[11px]">
-                  <div className="flex justify-between text-slate-600">
-                    <span>Fuel Consumption:</span>
-                    <span className="font-bold text-slate-900">42 MT / day</span>
-                  </div>
-                  <div className="flex justify-between text-slate-600">
-                    <span>Total Bunker Fuel Cost:</span>
-                    <span className="font-bold text-rose-700">${(analysisReport.rejectedVessels?.[0] as any)?.totalBunkerCostUsd?.toLocaleString() || '282,240'}</span>
-                  </div>
-                  <div className="flex justify-between text-slate-600">
-                    <span>Port Draft Status:</span>
-                    <span className="font-bold text-rose-700">18.5m (Exceeds Limit ✗)</span>
-                  </div>
-                  <div className="text-[10px] text-rose-800 leading-tight pt-1 border-t border-rose-100">
-                    {analysisReport.rejectedVessels?.[0]?.rejectionReason}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* MARITIME DECARBONIZATION & DEMURRAGE PENALTY ANALYTICS CARD */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-slate-100 font-mono text-xs">
-              <div className="p-4 bg-emerald-50/60 border border-emerald-200 rounded-xl space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <Leaf className="w-4 h-4 text-emerald-600" />
-                    <span className="font-bold text-slate-900 font-sans text-xs">IMO Carbon Footprint & CII Grade</span>
-                  </div>
-                  <span className="px-2 py-0.5 bg-emerald-600 text-white text-[9px] font-bold rounded">CII RATING: GRADE B</span>
-                </div>
-                <div className="grid grid-cols-2 gap-2 text-[11px] pt-1">
-                  <div>
-                    <span className="text-slate-500 block text-[10px]">Voyage CO2 Footprint:</span>
-                    <strong className="text-slate-900">1,240 MT CO₂e</strong>
-                  </div>
-                  <div>
-                    <span className="text-slate-500 block text-[10px]">EU ETS Carbon Outlay:</span>
-                    <strong className="text-emerald-700">$74,400 USD</strong>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-4 bg-amber-50/60 border border-amber-200 rounded-xl space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <Clock className="w-4 h-4 text-amber-600" />
-                    <span className="font-bold text-slate-900 font-sans text-xs">Demurrage & Anchorage Delay Risk</span>
-                  </div>
-                  <span className="px-2 py-0.5 bg-amber-600 text-white text-[9px] font-bold rounded">EST: $15,000 / DAY</span>
-                </div>
-                <div className="grid grid-cols-2 gap-2 text-[11px] pt-1">
-                  <div>
-                    <span className="text-slate-500 block text-[10px]">Berth Turnaround Target:</span>
-                    <strong className="text-slate-900">3.2 Days (45,000 TPD)</strong>
-                  </div>
-                  <div>
-                    <span className="text-slate-500 block text-[10px]">Demurrage Penalty Buffer:</span>
-                    <strong className="text-amber-800">₹0.36 Cr Buffer</strong>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* SECTION 4 VISUAL: BALLAST REPOSITIONING ROUTE & MARGIN VISUALIZER */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 text-white space-y-4 shadow-lg">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <div className="flex items-center space-x-2">
-                <Compass className="w-5 h-5 text-orange-400" />
-                <div>
-                  <h2 className="text-sm font-bold font-sans tracking-wide">
-                    Idle Repositioning Ballast Route Visualizer
-                  </h2>
-                  <div className="text-xs font-mono text-slate-400">
-                    Vessel Location: <span className="text-orange-400 font-bold">Paradip Discharge Anchorage</span> • Candidate Ballast Destinations
-                  </div>
-                </div>
-              </div>
-              <span className="px-3 py-1 bg-orange-500/20 text-orange-300 text-[10px] font-mono font-bold rounded-full border border-orange-500/40">
-                RECOMMENDED: BALLAST TO PORT HEDLAND (+ $42,500 MARGIN)
-              </span>
-            </div>
-
-            {/* Interactive Route Nodes */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 font-mono text-xs">
-              <div className="p-3.5 bg-slate-800/90 border border-orange-500/50 rounded-xl space-y-2 relative overflow-hidden">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-orange-400 font-sans">Port Hedland AU</span>
-                  <span className="text-[9px] px-2 py-0.5 bg-orange-500 text-slate-950 font-bold rounded">TOP PICK</span>
-                </div>
-                <div className="text-[11px] text-slate-300 space-y-1">
-                  <div>Ballast Dist: <strong className="text-white">3,400 nm</strong></div>
-                  <div>Sea Fuel Cons: <strong className="text-white">364 MT</strong></div>
-                  <div>Est. Net Margin: <strong className="text-emerald-400">+$42,500 USD</strong></div>
-                </div>
-              </div>
-
-              <div className="p-3.5 bg-slate-800/60 border border-slate-700/80 rounded-xl space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-blue-400 font-sans">Richards Bay ZA</span>
-                  <span className="text-[9px] px-2 py-0.5 bg-slate-700 text-slate-300 font-bold rounded">COAL STEM</span>
-                </div>
-                <div className="text-[11px] text-slate-300 space-y-1">
-                  <div>Ballast Dist: <strong className="text-white">4,800 nm</strong></div>
-                  <div>Sea Fuel Cons: <strong className="text-white">512 MT</strong></div>
-                  <div>Est. Net Margin: <strong className="text-emerald-400">+$38,200 USD</strong></div>
-                </div>
-              </div>
-
-              <div className="p-3.5 bg-slate-800/60 border border-slate-700/80 rounded-xl space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-emerald-400 font-sans">Samarinda ID</span>
-                  <span className="text-[9px] px-2 py-0.5 bg-slate-700 text-slate-300 font-bold rounded">SHORT BALLAST</span>
-                </div>
-                <div className="text-[11px] text-slate-300 space-y-1">
-                  <div>Ballast Dist: <strong className="text-white">2,150 nm</strong></div>
-                  <div>Sea Fuel Cons: <strong className="text-white">230 MT</strong></div>
-                  <div>Est. Net Margin: <strong className="text-emerald-400">+$18,400 USD</strong></div>
-                </div>
-              </div>
-
-              <div className="p-3.5 bg-slate-800/60 border border-slate-700/80 rounded-xl space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-purple-400 font-sans">Vostochny RU</span>
-                  <span className="text-[9px] px-2 py-0.5 bg-slate-700 text-slate-300 font-bold rounded">PACIFIC</span>
-                </div>
-                <div className="text-[11px] text-slate-300 space-y-1">
-                  <div>Ballast Dist: <strong className="text-white">3,800 nm</strong></div>
-                  <div>Sea Fuel Cons: <strong className="text-white">405 MT</strong></div>
-                  <div>Est. Net Margin: <strong className="text-emerald-400">+$29,800 USD</strong></div>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       )}
 
       {/* Detailed Create Procurement Plan Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 print:hidden">
-          <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-3xl overflow-hidden shadow-2xl space-y-0 animate-in zoom-in-95">
+        <div className="fixed inset-0 z-50 bg-[#0F1B2E]/40 backdrop-blur-xs flex items-center justify-center p-4 print:hidden">
+          <div className="card-theme border border-slate-100 rounded-2xl w-full max-w-3xl overflow-hidden shadow-2xl space-y-0 animate-in zoom-in-95">
             {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-900 text-white">
+            <div className="px-6 py-4 border-b border-[#0F1B2E]/10 flex items-center justify-between bg-[#0F1B2E] text-white">
               <div>
-                <h3 className="text-base font-extrabold flex items-center gap-2 font-display">
-                  <FileSpreadsheet className="w-5 h-5 text-orange-400" />
+                <h3 className="text-base font-bold flex items-center gap-2 font-serif">
+                  <FileSpreadsheet className="w-5 h-5 text-[#7b57ff]" />
                   <span>Create Enterprise Bulk Cargo Procurement Specification</span>
                 </h3>
-                <p className="text-xs text-slate-400 font-mono mt-0.5">
+                <p className="text-xs text-slate-300 font-mono mt-0.5">
                   SAIL Maritime Chartering • Cargo Specifications, Port Guarantees & Commercial Incoterms
                 </p>
               </div>
-              <button onClick={() => setIsModalOpen(false)} className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors">
+              <button onClick={() => setIsModalOpen(false)} className="p-1.5 text-slate-300 hover:text-white rounded-full transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Modal Tab Bar Navigation */}
-            <div className="flex border-b border-slate-200 bg-slate-50 px-6 pt-3 space-x-4 font-mono text-xs">
+            <div className="flex border-b border-[#0F1B2E]/10 bg-[#FAFAF8] px-6 pt-3 space-x-4 font-mono text-xs">
               <button
                 type="button"
                 onClick={() => setModalTab('CARGO')}
                 className={`pb-3 font-bold border-b-2 transition-all cursor-pointer ${
-                  modalTab === 'CARGO' ? 'border-orange-500 text-orange-600' : 'border-transparent text-slate-500 hover:text-slate-900'
+                  modalTab === 'CARGO' ? 'border-[#7b57ff] text-[#7b57ff]' : 'border-transparent text-[#3E5871] hover:text-[#0F1B2E]'
                 }`}
               >
                 1. Cargo & Quality Specs
@@ -1113,7 +1055,7 @@ export const ProcurementPage: React.FC = () => {
                 type="button"
                 onClick={() => setModalTab('OPERATIONS')}
                 className={`pb-3 font-bold border-b-2 transition-all cursor-pointer ${
-                  modalTab === 'OPERATIONS' ? 'border-orange-500 text-orange-600' : 'border-transparent text-slate-500 hover:text-slate-900'
+                  modalTab === 'OPERATIONS' ? 'border-[#7b57ff] text-[#7b57ff]' : 'border-transparent text-[#3E5871] hover:text-[#0F1B2E]'
                 }`}
               >
                 2. Port & Laycan Operations
@@ -1122,7 +1064,7 @@ export const ProcurementPage: React.FC = () => {
                 type="button"
                 onClick={() => setModalTab('COMMERCIAL')}
                 className={`pb-3 font-bold border-b-2 transition-all cursor-pointer ${
-                  modalTab === 'COMMERCIAL' ? 'border-orange-500 text-orange-600' : 'border-transparent text-slate-500 hover:text-slate-900'
+                  modalTab === 'COMMERCIAL' ? 'border-[#7b57ff] text-[#7b57ff]' : 'border-transparent text-[#3E5871] hover:text-[#0F1B2E]'
                 }`}
               >
                 3. Financial & IMO ESG Controls
@@ -1130,22 +1072,15 @@ export const ProcurementPage: React.FC = () => {
             </div>
 
             <form onSubmit={handleCreatePlan} className="p-6 space-y-4 text-xs font-sans max-h-[70vh] overflow-y-auto">
-              {formError && (
-                <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 flex items-center space-x-2 font-mono">
-                  <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
-                  <span>{formError}</span>
-                </div>
-              )}
-
               {/* TAB 1: CARGO & QUALITY SPECIFICATIONS */}
               {modalTab === 'CARGO' && (
                 <div className="space-y-4 animate-in fade-in">
                   <div>
-                    <label className="block text-slate-700 font-bold mb-1">Bulk Cargo Commodity Specification</label>
+                    <label className="block text-[#0F1B2E] font-bold mb-1">Bulk Cargo Commodity Specification</label>
                     <select
                       value={commodity}
                       onChange={(e) => setCommodity(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-900 font-semibold focus:outline-none focus:border-orange-500 font-sans"
+                      className="w-full bg-[#FAFAF8] border border-slate-200 rounded-xl px-3.5 py-2.5 text-[#0F1B2E] font-semibold focus:outline-none focus:border-[#7b57ff] font-sans"
                     >
                       <option value="Australian Blast Furnace Coking Coal">Australian Blast Furnace Coking Coal (Prime Hard)</option>
                       <option value="Odisha Iron Ore Fines (+62% Fe Grade)">Odisha Iron Ore Fines (+62% Fe Grade)</option>
@@ -1156,18 +1091,18 @@ export const ProcurementPage: React.FC = () => {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-slate-700 font-bold mb-1">Total Cargo Quantity (Metric Tons)</label>
+                      <label className="block text-[#0F1B2E] font-bold mb-1">Total Cargo Quantity (Metric Tons)</label>
                       <input
                         type="number"
                         required
                         value={quantityMt}
                         onChange={(e) => setQuantityMt(e.target.value)}
                         placeholder="180000"
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 focus:outline-none focus:border-orange-500 font-mono font-bold"
+                        className="w-full bg-[#FAFAF8] border border-slate-200 rounded-xl px-3.5 py-2 text-[#0F1B2E] focus:outline-none focus:border-[#7b57ff] font-mono font-bold"
                       />
                     </div>
                     <div>
-                      <label className="block text-slate-700 font-bold mb-1">Target Freight Rate Ceiling ($/MT USD)</label>
+                      <label className="block text-[#0F1B2E] font-bold mb-1">Target Freight Rate Ceiling ($/MT USD)</label>
                       <input
                         type="number"
                         step="0.01"
@@ -1175,219 +1110,16 @@ export const ProcurementPage: React.FC = () => {
                         value={targetFreightCeilingUsd}
                         onChange={(e) => setTargetFreightCeilingUsd(e.target.value)}
                         placeholder="28.50"
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 focus:outline-none focus:border-orange-500 font-mono font-bold text-orange-600"
+                        className="w-full bg-[#FAFAF8] border border-slate-200 rounded-xl px-3.5 py-2 text-[#7b57ff] focus:outline-none focus:border-[#7b57ff] font-mono font-bold"
                       />
                     </div>
-                  </div>
-
-                  {/* Quality Specs Panel */}
-                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
-                    <div className="font-bold text-slate-900 text-xs font-sans flex items-center justify-between border-b border-slate-200 pb-2">
-                      <span>Commodity Technical Quality Parameters</span>
-                      <span className="text-[10px] text-slate-500 font-mono">SAIL Quality Standard Assurance</span>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-3">
-                      <div>
-                        <label className="block text-slate-600 text-[10px] font-mono mb-1">Ash Content (%)</label>
-                        <input
-                          type="number"
-                          step="0.1"
-                          value={ashContentPct}
-                          onChange={(e) => setAshContentPct(e.target.value)}
-                          className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-900 font-mono"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-slate-600 text-[10px] font-mono mb-1">Volatile Matter VM (%)</label>
-                        <input
-                          type="number"
-                          step="0.1"
-                          value={volatileMatterPct}
-                          onChange={(e) => setVolatileMatterPct(e.target.value)}
-                          className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-900 font-mono"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-slate-600 text-[10px] font-mono mb-1">Coke Strength (CSR Rating)</label>
-                        <input
-                          type="number"
-                          step="0.1"
-                          value={csrRating}
-                          onChange={(e) => setCsrRating(e.target.value)}
-                          className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-slate-900 font-mono"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* TAB 2: PORT & LAYCAN OPERATIONS */}
-              {modalTab === 'OPERATIONS' && (
-                <div className="space-y-4 animate-in fade-in">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-slate-700 font-bold mb-1">Origin Loading Port</label>
-                      <select
-                        value={originPortId}
-                        onChange={(e) => setOriginPortId(e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 focus:outline-none focus:border-orange-500 font-mono"
-                      >
-                        {ports.map((p) => (
-                          <option key={p.id} value={p.id}>
-                            {p.name} ({p.country}) — Max Draft {p.maxDraftM || 15.2}m
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-slate-700 font-bold mb-1">Destination Discharge Port</label>
-                      <select
-                        value={destinationPortId}
-                        onChange={(e) => setDestinationPortId(e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 focus:outline-none focus:border-orange-500 font-mono"
-                      >
-                        {ports.map((p) => (
-                          <option key={p.id} value={p.id}>
-                            {p.name} ({p.country}) — Max Draft {p.maxDraftM || 14.5}m
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-slate-700 font-bold mb-1">Guaranteed Discharge Rate (MT/Day)</label>
-                      <input
-                        type="number"
-                        value={dischargeRateTpd}
-                        onChange={(e) => setDischargeRateTpd(e.target.value)}
-                        placeholder="45000"
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 font-mono font-bold"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-slate-700 font-bold mb-1">Required Laycan Delivery Date</label>
-                      <input
-                        type="date"
-                        required
-                        value={deliveryDate}
-                        onChange={(e) => setDeliveryDate(e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 font-mono font-bold"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="p-4 bg-amber-50/50 rounded-2xl border border-amber-200 space-y-2 text-xs text-amber-900 font-mono">
-                    <div className="font-bold font-sans flex items-center gap-1.5 text-amber-950">
-                      <Clock className="w-4 h-4 text-amber-600" />
-                      <span>East Coast Laycan & Congestion Note</span>
-                    </div>
-                    <p className="text-[11px] text-amber-800 leading-relaxed font-sans">
-                      Discharge port channel limits will be verified automatically by the Python decision engine against max draft depth and berth turnaround rates.
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* TAB 3: FINANCIAL, COMMERCIAL & ESG CONTROLS */}
-              {modalTab === 'COMMERCIAL' && (
-                <div className="space-y-4 animate-in fade-in">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-slate-700 font-bold mb-1">Incoterms Commercial Rule</label>
-                      <select
-                        value={incoterm}
-                        onChange={(e) => setIncoterm(e.target.value as any)}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 font-bold font-mono"
-                      >
-                        <option value="FOB">FOB (Free on Board — SAIL Chartering)</option>
-                        <option value="CFR">CFR (Cost & Freight — Supplier Chartering)</option>
-                        <option value="CIF">CIF (Cost, Insurance & Freight)</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-slate-700 font-bold mb-1">Total Target Budget (₹ Crore)</label>
-                      <input
-                        type="number"
-                        step="0.1"
-                        required
-                        value={budgetCrore}
-                        onChange={(e) => setBudgetCrore(e.target.value)}
-                        placeholder="165.0"
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 font-mono font-bold text-orange-600"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-slate-700 font-bold mb-1">Daily Demurrage Rate ($/Day USD)</label>
-                      <input
-                        type="number"
-                        value={demurrageRateUsdDay}
-                        onChange={(e) => setDemurrageRateUsdDay(e.target.value)}
-                        placeholder="15000"
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 font-mono"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-slate-700 font-bold mb-1">Max Vessel Age Limit (Years)</label>
-                      <input
-                        type="number"
-                        value={maxVesselAgeYears}
-                        onChange={(e) => setMaxVesselAgeYears(e.target.value)}
-                        placeholder="15"
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 font-mono"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-slate-700 font-bold mb-1">Vessel Fuel & Engine Spec</label>
-                      <select
-                        value={fuelType}
-                        onChange={(e) => setFuelType(e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 font-mono text-[11px]"
-                      >
-                        <option value="VLSFO (Very Low Sulfur Fuel Oil - $640/MT)">VLSFO (Very Low Sulfur Fuel Oil - $640/MT)</option>
-                        <option value="HFO (Heavy Fuel Oil + Scrubber - $480/MT)">HFO (Heavy Fuel Oil + Scrubber - $480/MT)</option>
-                        <option value="LNG Dual-Fuel Engine ($760/MT)">LNG Dual-Fuel Engine ($760/MT)</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-slate-700 font-bold mb-1">IMO Carbon CII Rating Requirement</label>
-                      <select
-                        value={esgCiiGrade}
-                        onChange={(e) => setEsgCiiGrade(e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 font-mono text-[11px]"
-                      >
-                        <option value="GRADE_A">Grade A (High Efficiency Compliant)</option>
-                        <option value="GRADE_B">Grade B (Standard Compliance)</option>
-                        <option value="GRADE_C">Grade C (Permissible Baseline)</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-700 font-bold mb-1">Special Chartering Terms & Governance Notes</label>
-                    <textarea
-                      rows={2}
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
-                      placeholder="e.g. Requires 24-hour notice before laycan entry. Vessel must have active P&I Club cover."
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 font-sans focus:outline-none focus:border-orange-500"
-                    />
                   </div>
                 </div>
               )}
 
               {/* Modal Footer Controls */}
-              <div className="pt-4 flex items-center justify-between border-t border-slate-200 font-mono">
-                <div className="text-[11px] text-slate-500">
+              <div className="pt-4 flex items-center justify-between border-t border-[#0F1B2E]/10 font-mono">
+                <div className="text-[11px] text-[#3E5871]">
                   Step {modalTab === 'CARGO' ? '1' : modalTab === 'OPERATIONS' ? '2' : '3'} of 3
                 </div>
 
@@ -1396,7 +1128,7 @@ export const ProcurementPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setModalTab(modalTab === 'COMMERCIAL' ? 'OPERATIONS' : 'CARGO')}
-                      className="px-4 py-2 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-xl font-bold transition-all cursor-pointer"
+                      className="decline-button-theme text-xs font-bold px-4 py-2"
                     >
                       Back
                     </button>
@@ -1406,7 +1138,7 @@ export const ProcurementPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setModalTab(modalTab === 'CARGO' ? 'OPERATIONS' : 'COMMERCIAL')}
-                      className="px-5 py-2 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-xl shadow-sm transition-all cursor-pointer"
+                      className="accept-button-theme text-xs font-bold shadow-card-soft px-5 py-2"
                     >
                       Next Step →
                     </button>
@@ -1414,7 +1146,7 @@ export const ProcurementPage: React.FC = () => {
                     <button
                       type="submit"
                       disabled={submitting}
-                      className="px-6 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl shadow-md transition-all cursor-pointer disabled:opacity-50"
+                      className="accept-button-theme text-xs font-bold shadow-card-soft disabled:opacity-50 px-6 py-2"
                     >
                       {submitting ? 'Creating Specification...' : 'Submit Enterprise Plan ✓'}
                     </button>

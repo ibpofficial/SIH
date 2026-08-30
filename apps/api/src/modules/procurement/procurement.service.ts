@@ -385,11 +385,11 @@ export class ProcurementService {
         ]
       },
       vesselRecommendations: [
-        { vesselTypeId: 'panamax', vesselTypeName: 'Kamsarmax / Panamax', vesselCode: 'PANAMAX', isFeasible: true, draftM: 14.2, lengthM: 225.0, requiredVoyagesCount: 2, estimatedTurnaroundDays: 3.3, estimatedCostUsd: 2957500.0, rank: 1 },
-        { vesselTypeId: 'supra', vesselTypeName: 'Supramax / Ultramax', vesselCode: 'SUPRA', isFeasible: true, draftM: 12.8, lengthM: 200.0, requiredVoyagesCount: 3, estimatedTurnaroundDays: 3.3, estimatedCostUsd: 3120000.0, rank: 2 }
+        { vesselTypeId: 'panamax', vesselTypeName: 'Kamsarmax / Panamax', vesselCode: 'PANAMAX', isFeasible: true, draftM: 14.2, lengthM: 225.0, requiredVoyagesCount: 2, estimatedTurnaroundDays: 3.3, estimatedCostUsd: 2957500.0, totalBunkerCostUsd: 250880.0, costPerMtUsd: 16.43, rank: 1 },
+        { vesselTypeId: 'supra', vesselTypeName: 'Supramax / Ultramax', vesselCode: 'SUPRA', isFeasible: true, draftM: 12.8, lengthM: 200.0, requiredVoyagesCount: 3, estimatedTurnaroundDays: 3.3, estimatedCostUsd: 3120000.0, totalBunkerCostUsd: 262144.0, costPerMtUsd: 17.33, rank: 2 }
       ],
       rejectedVessels: [
-        { vesselTypeId: 'cape', vesselTypeName: 'Capesize Heavy Bulk', vesselCode: 'CAPE', isFeasible: false, draftM: 18.5, lengthM: 295.0, requiredVoyagesCount: 1, estimatedTurnaroundDays: 3.3, estimatedCostUsd: 3850000.0, rejectionReason: `Draft Violation: Vessel draft 18.5m exceeds ${req.destinationPort.name} max draft constraint ${req.destinationPort.maxDraftM}m` }
+        { vesselTypeId: 'cape', vesselTypeName: 'Capesize Heavy Bulk', vesselCode: 'CAPE', isFeasible: false, draftM: 18.5, lengthM: 295.0, requiredVoyagesCount: 1, estimatedTurnaroundDays: 3.3, estimatedCostUsd: 3850000.0, totalBunkerCostUsd: 282240.0, costPerMtUsd: 21.39, rejectionReason: `Draft Violation: Vessel draft 18.5m exceeds ${req.destinationPort.name} max draft constraint ${req.destinationPort.maxDraftM}m` }
       ],
       contractStrategies: [
         {

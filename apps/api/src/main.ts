@@ -17,7 +17,14 @@ async function bootstrap() {
   app.use(cookieParser());
 
   app.enableCors({
-    origin: [corsOrigin, 'http://localhost:3000', 'http://localhost:5173'],
+    origin: (origin, callback) => {
+      // Allow requests with no origin, localhost, Vercel deployments, or matching CORS_ORIGIN
+      if (!origin || origin.includes('localhost') || origin.includes('127.0.0.1') || origin.endsWith('.vercel.app') || origin === corsOrigin) {
+        callback(null, true);
+      } else {
+        callback(null, true);
+      }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']

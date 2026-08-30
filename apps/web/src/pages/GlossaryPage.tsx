@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { glossaryData, GlossaryItem } from '../data/glossaryData';
-import { BookOpen, Search, Filter, HelpCircle, ArrowUpRight } from 'lucide-react';
+import { glossaryData } from '../data/glossaryData';
+import { BookOpen, Search } from 'lucide-react';
+import { Breadcrumbs } from '../components/ui/Breadcrumbs';
 
 export const GlossaryPage: React.FC = () => {
   const [search, setSearch] = useState('');
@@ -18,26 +19,28 @@ export const GlossaryPage: React.FC = () => {
 
   return (
     <div className="space-y-6 font-sans">
+      <Breadcrumbs activePath="/glossary" onNavigate={() => {}} />
+
       {/* Header */}
-      <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="bg-white border border-[#0F1B2E]/10 rounded-xl p-5 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-india-saffron" />
+          <h1 className="text-xl font-bold tracking-tight text-[#0F1B2E] flex items-center gap-2 font-serif">
+            <BookOpen className="w-5 h-5 text-[#A9793A]" />
             <span>Maritime Shipping & Analytics Glossary</span>
           </h1>
-          <p className="text-xs text-slate-500 font-mono mt-0.5">
+          <p className="text-xs text-[#3E5871] font-mono mt-0.5">
             Single Source of Truth for Shipping, Port Constraints & ML Analytics Terminology
           </p>
         </div>
 
         <div className="relative w-full md:w-72 font-mono text-xs">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+          <Search className="w-4 h-4 text-[#3E5871] absolute left-3 top-2.5" />
           <input
             type="text"
             placeholder="Search term, abbreviation, definition..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-3 py-2 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-orange-500"
+            className="w-full bg-[#FAFAF8] border border-[#0F1B2E]/10 rounded-lg pl-9 pr-3 py-2 text-[#0F1B2E] placeholder-[#3E5871] focus:outline-none focus:border-[#A9793A]"
           />
         </div>
       </div>
@@ -48,10 +51,10 @@ export const GlossaryPage: React.FC = () => {
           <button
             key={cat}
             onClick={() => setSelectedCategory(cat)}
-            className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
+            className={`px-3 py-1.5 rounded font-bold transition-all cursor-pointer ${
               selectedCategory === cat
-                ? 'bg-orange-500 text-white shadow-xs'
-                : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'
+                ? 'bg-[#0F1B2E] text-white shadow-xs'
+                : 'bg-white border border-[#0F1B2E]/10 text-[#3E5871] hover:bg-[#FAFAF8]'
             }`}
           >
             {cat}
@@ -62,26 +65,26 @@ export const GlossaryPage: React.FC = () => {
       {/* Glossary Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {filtered.map((item) => (
-          <div key={item.id} className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-2">
+          <div key={item.id} className="bg-white border border-[#0F1B2E]/10 rounded-xl p-5 shadow-xs space-y-2">
             <div className="flex items-center justify-between">
-              <span className="font-bold text-slate-900 font-sans text-sm flex items-center gap-2">
+              <span className="font-bold text-[#0F1B2E] font-serif text-sm flex items-center gap-2">
                 <span>{item.term}</span>
                 {item.abbreviation && (
-                  <span className="px-2 py-0.5 bg-orange-100 text-orange-800 text-[10px] font-mono rounded font-bold">
+                  <span className="px-2 py-0.5 bg-[#FAF4EB] text-[#A9793A] border border-[#A9793A]/30 text-[10px] font-mono rounded font-bold">
                     {item.abbreviation}
                   </span>
                 )}
               </span>
-              <span className="px-2 py-0.5 bg-slate-100 text-slate-600 text-[9px] font-mono rounded font-bold uppercase border border-slate-200">
+              <span className="px-2 py-0.5 bg-[#FAFAF8] text-[#3E5871] text-[9px] font-mono rounded font-bold uppercase border border-[#0F1B2E]/10">
                 {item.category}
               </span>
             </div>
 
-            <div className="text-xs text-slate-800 font-semibold font-sans leading-relaxed">
+            <div className="text-xs text-[#0F1B2E] font-semibold font-sans leading-relaxed">
               {item.shortDefinition}
             </div>
 
-            <p className="text-xs text-slate-500 leading-relaxed font-sans pt-1 border-t border-slate-100">
+            <p className="text-xs text-[#3E5871] leading-relaxed font-sans pt-1 border-t border-[#0F1B2E]/10">
               {item.fullExplanation}
             </p>
           </div>

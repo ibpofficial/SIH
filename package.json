@@ -3,21 +3,20 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "pnpm --parallel --filter \"./apps/*\" dev",
-    "dev:api": "pnpm --filter freightiq-api dev",
-    "dev:web": "pnpm --filter freightiq-web dev",
-    "build": "pnpm --filter ./packages/* build && pnpm --filter ./apps/* build",
-    "db:migrate": "pnpm --filter freightiq-api db:migrate",
-    "db:seed": "pnpm --filter freightiq-api db:seed",
-    "db:studio": "pnpm --filter freightiq-api db:studio",
-    "lint": "pnpm --recursive lint"
+    "dev": "npm --prefix apps/web run dev",
+    "dev:all": "pnpm --parallel --filter \"./apps/*\" dev",
+    "dev:api": "npm --prefix apps/api run dev",
+    "dev:web": "npm --prefix apps/web run dev",
+    "build": "npm --prefix apps/web run build",
+    "db:migrate": "npm --prefix apps/api run db:migrate",
+    "db:seed": "npm --prefix apps/api run db:seed",
+    "db:studio": "npm --prefix apps/api run db:studio"
   },
   "devDependencies": {
     "prettier": "^3.2.5",
     "typescript": "^5.3.3"
   },
   "engines": {
-    "node": ">=18.0.0",
-    "pnpm": ">=8.0.0"
+    "node": ">=18.0.0"
   }
 }

@@ -3,20 +3,16 @@ import { useFirestoreCollection } from '../hooks/useFirestore';
 import { seedFirestoreIfEmpty } from '../lib/firebaseSeed';
 import { Breadcrumbs } from '../components/ui/Breadcrumbs';
 import { GlossaryTerm } from '../components/ui/GlossaryTerm';
+import { CompassRiskGauge } from '../components/ui/CompassRiskGauge';
+import { CharterStampBadge } from '../components/ui/CharterStampBadge';
 import {
   Anchor,
   Ship,
   FileSpreadsheet,
   Database,
   ArrowUpRight,
-  TrendingUp,
-  Clock,
   ShieldCheck,
-  Flag,
   Sparkles,
-  Sliders,
-  CheckCircle2,
-  AlertTriangle,
   Radio,
   Zap,
   Upload,
@@ -51,44 +47,44 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate }) => {
       <Breadcrumbs activePath="/" onNavigate={onNavigate} />
 
       {/* Header Banner with Simple / Advanced Mode Selector */}
-      <div className="glass-card rounded-2xl p-6 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="card-theme rounded-2xl p-6 shadow-card-soft border border-slate-100 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center space-x-2">
-            <h1 className="text-xl font-extrabold tracking-tight text-slate-900 font-display">
+            <h1 className="text-xl font-bold tracking-tight text-[#0F1B2E] font-serif">
               FreightIQ Executive Command Center
             </h1>
-            <span className="px-2.5 py-0.5 tricolor-badge text-xs font-bold text-slate-800 rounded-full border border-orange-300">
+            <span className="px-3 py-0.5 bg-[#7b57ff]/10 text-[#7b57ff] text-xs font-bold rounded-full border border-[#7b57ff]/30 font-mono">
               SIH26006 • East Coast Hub
             </span>
-            <span className="px-2.5 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-mono rounded-full font-bold flex items-center gap-1 border border-emerald-300">
-              <Radio className="w-3 h-3 text-emerald-600 animate-pulse" />
+            <span className="px-3 py-0.5 bg-[#F0F7F4] text-[#2D6A4F] text-[10px] font-mono rounded-full font-bold flex items-center gap-1 border border-[#2D6A4F]/30">
+              <Radio className="w-3 h-3 text-[#2D6A4F] animate-pulse" />
               <span>LIVE SYSTEM ACTIVE</span>
             </span>
           </div>
-          <p className="text-xs text-slate-500 font-mono mt-1">
+          <p className="text-xs text-[#3E5871] font-mono mt-1">
             Real-Time Market Rate Forecasting • Port <GlossaryTerm termId="draft">Draft</GlossaryTerm> & <GlossaryTerm termId="loa">LOA</GlossaryTerm> Physical Constraint Solver
           </p>
         </div>
 
         {/* View Mode Toggle: Simple vs Advanced */}
         <div className="flex items-center space-x-2">
-          <div className="flex rounded-xl bg-slate-100/90 p-1 font-mono text-xs border border-slate-200 shadow-2xs">
+          <div className="flex rounded-full bg-[#DADADA]/60 p-1 font-mono text-xs border border-slate-200">
             <button
               onClick={() => handleToggleMode('SIMPLE')}
-              className={`px-3.5 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
+              className={`px-4 py-1.5 rounded-full font-bold transition-all cursor-pointer ${
                 viewMode === 'SIMPLE'
-                  ? 'bg-white text-orange-600 shadow-xs border border-slate-200/60'
-                  : 'text-slate-500 hover:text-slate-900'
+                  ? 'bg-[#7b57ff] text-white shadow-xs'
+                  : 'text-[#2E2E2E] hover:text-black'
               }`}
             >
               Executive Summary
             </button>
             <button
               onClick={() => handleToggleMode('ADVANCED')}
-              className={`px-3.5 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
+              className={`px-4 py-1.5 rounded-full font-bold transition-all cursor-pointer ${
                 viewMode === 'ADVANCED'
-                  ? 'bg-white text-orange-600 shadow-xs border border-slate-200/60'
-                  : 'text-slate-500 hover:text-slate-900'
+                  ? 'bg-[#7b57ff] text-white shadow-xs'
+                  : 'text-[#2E2E2E] hover:text-black'
               }`}
             >
               Detailed Analytics
@@ -98,53 +94,53 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate }) => {
       </div>
 
       {/* QUICK LAUNCH ACTIONS TOOLBAR */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
         <button
           onClick={() => onNavigate('/procurement')}
-          className="p-3.5 glass-card rounded-xl flex items-center justify-between text-left hover:border-orange-300 transition-all cursor-pointer group"
+          className="p-4 card-theme rounded-2xl border border-slate-100 flex items-center justify-between text-left hover:border-[#7b57ff] transition-all cursor-pointer group shadow-card-soft"
         >
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-orange-100 text-orange-700 rounded-lg group-hover:scale-105 transition-transform">
+            <div className="p-2.5 bg-[#7b57ff]/10 text-[#7b57ff] rounded-full border border-[#7b57ff]/30">
               <Zap className="w-4 h-4" />
             </div>
             <div>
-              <div className="text-xs font-bold text-slate-900 font-sans">Run Chartering Analysis</div>
-              <div className="text-[10px] text-slate-500 font-mono">Evaluate Spot vs COA vs Idle</div>
+              <div className="text-xs font-bold text-[#0F1B2E] font-sans">Run Chartering Analysis</div>
+              <div className="text-[10px] text-[#3E5871]">Evaluate Spot vs COA vs Idle</div>
             </div>
           </div>
-          <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-orange-600 transition-colors" />
+          <ChevronRight className="w-4 h-4 text-[#3E5871] group-hover:text-[#7b57ff] transition-colors" />
         </button>
 
         <button
           onClick={() => onNavigate('/ingestion')}
-          className="p-3.5 glass-card rounded-xl flex items-center justify-between text-left hover:border-purple-300 transition-all cursor-pointer group"
+          className="p-4 card-theme rounded-2xl border border-slate-100 flex items-center justify-between text-left hover:border-[#2C5282] transition-all cursor-pointer group shadow-card-soft"
         >
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-purple-100 text-purple-700 rounded-lg group-hover:scale-105 transition-transform">
+            <div className="p-2.5 bg-[#EBF8FF] text-[#2C5282] rounded-full border border-[#2C5282]/30">
               <Upload className="w-4 h-4" />
             </div>
             <div>
-              <div className="text-xs font-bold text-slate-900 font-sans">Import Market Rate Feeds</div>
-              <div className="text-[10px] text-slate-500 font-mono">3-Stage CSV Validation Pipeline</div>
+              <div className="text-xs font-bold text-[#0F1B2E] font-sans">Import Market Rate Feeds</div>
+              <div className="text-[10px] text-[#3E5871]">3-Stage CSV Validation Pipeline</div>
             </div>
           </div>
-          <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-purple-600 transition-colors" />
+          <ChevronRight className="w-4 h-4 text-[#3E5871] group-hover:text-[#2C5282] transition-colors" />
         </button>
 
         <button
           onClick={() => onNavigate('/audit')}
-          className="p-3.5 glass-card rounded-xl flex items-center justify-between text-left hover:border-indigo-300 transition-all cursor-pointer group"
+          className="p-4 card-theme rounded-2xl border border-slate-100 flex items-center justify-between text-left hover:border-[#2D6A4F] transition-all cursor-pointer group shadow-card-soft"
         >
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-indigo-100 text-indigo-700 rounded-lg group-hover:scale-105 transition-transform">
+            <div className="p-2.5 bg-[#F0F7F4] text-[#2D6A4F] rounded-full border border-[#2D6A4F]/30">
               <ShieldCheck className="w-4 h-4" />
             </div>
             <div>
-              <div className="text-xs font-bold text-slate-900 font-sans">Governance & Audit Trail</div>
-              <div className="text-[10px] text-slate-500 font-mono">Immutable Decision Logs</div>
+              <div className="text-xs font-bold text-[#0F1B2E] font-sans">Governance & Audit Trail</div>
+              <div className="text-[10px] text-[#3E5871]">Immutable Decision Logs</div>
             </div>
           </div>
-          <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-indigo-600 transition-colors" />
+          <ChevronRight className="w-4 h-4 text-[#3E5871] group-hover:text-[#2D6A4F] transition-colors" />
         </button>
       </div>
 
@@ -153,54 +149,59 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate }) => {
         <div className="space-y-6 animate-in fade-in">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 font-sans">
             {/* Card 1: Key Decision Recommendation */}
-            <div className="bg-gradient-to-br from-orange-50/90 via-white to-amber-50/90 border border-orange-200 rounded-2xl p-5 shadow-sm space-y-3 glow-orange">
+            <div className="card-theme rounded-2xl p-6 shadow-card-soft border border-slate-100 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold font-mono text-orange-800 uppercase tracking-wider">Top Recommendation</span>
-                <Sparkles className="w-4 h-4 text-orange-600" />
+                <span className="text-[11px] font-bold font-mono text-[#3E5871] uppercase tracking-wider">Top Recommendation</span>
+                <CharterStampBadge variant="RECOMMENDED" label="6-MONTH COA" />
               </div>
-              <div className="text-base font-extrabold text-slate-900 leading-snug">
+              <div className="text-base font-bold text-[#0F1B2E] leading-snug font-serif">
                 Fix 6-Month COA Contract for Australian Coking Coal
               </div>
-              <p className="text-xs text-slate-600 leading-relaxed font-sans">
-                Walk-forward XGBoost model predicts spot rates trending UPWARDS (+9.2% over 90 days). Locking in 6-month COA terms shields against rate spikes.
+              <p className="text-xs text-[#3E5871] leading-relaxed font-sans">
+                XGBoost model predicts spot rates trending UPWARDS (+9.2% over 90 days). Locking in 6-month COA terms shields against rate spikes.
               </p>
               <button
                 onClick={() => onNavigate('/procurement')}
-                className="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-xs font-bold font-mono cursor-pointer transition-colors flex items-center gap-1.5 shadow-xs"
+                className="accept-button-theme px-4 py-2 font-bold text-xs shadow-xs"
               >
                 <span>Open Procurement Analysis</span>
-                <ArrowUpRight className="w-4 h-4" />
+                <ArrowUpRight className="w-4 h-4 text-white" />
               </button>
             </div>
 
-            {/* Card 2: Market Risk Radar */}
-            <div className="glass-card rounded-2xl p-5 shadow-sm space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold font-mono text-slate-500 uppercase tracking-wider">Composite Risk Rating</span>
-                <span className="px-2.5 py-0.5 bg-amber-100 text-amber-900 text-[10px] font-mono rounded-full font-bold border border-amber-300">
-                  MODERATE RISK (55.6/100)
-                </span>
+            {/* Card 2: Composite Risk Gauge Signature Element */}
+            <div className="card-theme rounded-2xl p-6 shadow-card-soft border border-slate-100 space-y-3 flex flex-col items-center justify-between">
+              <div className="w-full flex items-center justify-between">
+                <span className="text-[11px] font-bold font-mono text-[#3E5871] uppercase tracking-wider">Composite Risk Navigation</span>
+                <Sparkles className="w-4 h-4 text-[#7b57ff]" />
               </div>
-              <div className="text-3xl font-extrabold text-slate-900 tabular-nums font-mono">
-                55.6 <span className="text-xs font-normal text-slate-500 font-sans">/ 100</span>
-              </div>
-              <p className="text-xs text-slate-600 leading-relaxed font-sans">
-                Primary risk driver is East Coast berth congestion and seasonal monsoon weather delays at Paradip port.
+              
+              <CompassRiskGauge score={55.6} riskLevel="MODERATE" size="md" />
+
+              <p className="text-xs text-[#3E5871] leading-relaxed text-center font-sans">
+                Primary risk driver: East Coast berth turnaround delays at Paradip discharge terminal.
               </p>
             </div>
 
             {/* Card 3: Tonnage Feasibility */}
-            <div className="glass-card rounded-2xl p-5 shadow-sm space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold font-mono text-slate-500 uppercase tracking-wider">Port & Vessel Constraints</span>
-                <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+            <div className="card-theme rounded-2xl p-6 shadow-card-soft border border-slate-100 space-y-3 flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold font-mono text-[#3E5871] uppercase tracking-wider">Port & Vessel Constraints</span>
+                  <CharterStampBadge variant="FEASIBLE" label="PANAMAX TONNAGE" />
+                </div>
+                <div className="text-base font-bold text-[#2D6A4F] font-serif">
+                  Panamax Bulk Carrier Selected
+                </div>
+                <p className="text-xs text-[#3E5871] leading-relaxed font-sans">
+                  Capesize carriers automatically rejected due to Paradip channel depth limits (max draft 14.5m vs Capesize draft 18.5m).
+                </p>
               </div>
-              <div className="text-base font-extrabold text-emerald-700 font-sans">
-                Panamax Tonnage Selected
+
+              <div className="pt-2 border-t border-[#0F1B2E]/10 flex items-center justify-between text-xs font-mono text-[#3E5871]">
+                <span>Draft Constraint: 14.2m</span>
+                <span className="text-[#2D6A4F] font-bold">Passed ✓</span>
               </div>
-              <p className="text-xs text-slate-600 leading-relaxed font-sans">
-                Capesize carriers automatically rejected due to Paradip channel depth limitations (max draft 14.5m vs Capesize draft 18.5m).
-              </p>
             </div>
           </div>
         </div>
@@ -211,71 +212,71 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate }) => {
         <div className="space-y-6 animate-in fade-in">
           {/* 4 Metric Cards Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="glass-card rounded-2xl p-5 shadow-sm space-y-2">
+            <div className="card-theme rounded-2xl p-5 shadow-card-soft border border-slate-100 space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold font-mono uppercase text-slate-500">Registered Ports</span>
-                <Anchor className="w-5 h-5 text-orange-500" />
+                <span className="text-[11px] font-bold font-mono uppercase text-[#3E5871]">Registered Ports</span>
+                <Anchor className="w-5 h-5 text-[#7b57ff]" />
               </div>
-              <div className="text-3xl font-extrabold text-slate-900 font-mono tabular-nums">
+              <div className="text-3xl font-bold text-[#0F1B2E] font-mono tabular-nums font-serif">
                 {ports.length || 8}
               </div>
-              <div className="text-[11px] text-emerald-600 font-mono font-bold flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+              <div className="text-[11px] text-[#2D6A4F] font-mono font-bold flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#2D6A4F] animate-ping" />
                 <span>Live Firestore Registry</span>
               </div>
             </div>
 
-            <div className="glass-card rounded-2xl p-5 shadow-sm space-y-2">
+            <div className="card-theme rounded-2xl p-5 shadow-card-soft border border-slate-100 space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold font-mono uppercase text-slate-500">Vessel Fleet Classes</span>
-                <Ship className="w-5 h-5 text-blue-600" />
+                <span className="text-[11px] font-bold font-mono uppercase text-[#3E5871]">Vessel Fleet Classes</span>
+                <Ship className="w-5 h-5 text-[#2C5282]" />
               </div>
-              <div className="text-3xl font-extrabold text-slate-900 font-mono tabular-nums">
+              <div className="text-3xl font-bold text-[#0F1B2E] font-mono tabular-nums font-serif">
                 {vessels.length || 4}
               </div>
-              <div className="text-[11px] text-blue-600 font-mono font-bold">
+              <div className="text-[11px] text-[#2C5282] font-mono font-bold">
                 Handysize to Capesize Specs
               </div>
             </div>
 
-            <div className="glass-card rounded-2xl p-5 shadow-sm space-y-2">
+            <div className="card-theme rounded-2xl p-5 shadow-card-soft border border-slate-100 space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold font-mono uppercase text-slate-500">Procurement Plans</span>
-                <FileSpreadsheet className="w-5 h-5 text-emerald-600" />
+                <span className="text-[11px] font-bold font-mono uppercase text-[#3E5871]">Procurement Plans</span>
+                <FileSpreadsheet className="w-5 h-5 text-[#2D6A4F]" />
               </div>
-              <div className="text-3xl font-extrabold text-slate-900 font-mono tabular-nums">
+              <div className="text-3xl font-bold text-[#0F1B2E] font-mono tabular-nums font-serif">
                 {procurements.length || 1}
               </div>
-              <div className="text-[11px] text-emerald-600 font-mono font-bold">
+              <div className="text-[11px] text-[#2D6A4F] font-mono font-bold">
                 Optimized COA Contracts
               </div>
             </div>
 
-            <div className="glass-card rounded-2xl p-5 shadow-sm space-y-2">
+            <div className="card-theme rounded-2xl p-5 shadow-card-soft border border-slate-100 space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold font-mono uppercase text-slate-500">ML Forecast Engine</span>
-                <Database className="w-5 h-5 text-purple-600" />
+                <span className="text-[11px] font-bold font-mono uppercase text-[#3E5871]">ML Forecast Engine</span>
+                <Database className="w-5 h-5 text-[#7b57ff]" />
               </div>
-              <div className="text-2xl font-extrabold text-slate-900 font-mono uppercase">
+              <div className="text-2xl font-bold text-[#0F1B2E] font-mono uppercase font-serif">
                 XGBoost
               </div>
-              <div className="text-[11px] text-purple-600 font-mono font-bold">
-                FastAPI Python Service
+              <div className="text-[11px] text-[#7b57ff] font-mono font-bold">
+                FastAPI Python Solvers
               </div>
             </div>
           </div>
 
           {/* Recent Procurements Table */}
-          <div className="glass-card rounded-2xl overflow-hidden shadow-sm">
-            <div className="px-6 py-4 border-b border-slate-200/80 flex items-center justify-between">
-              <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2 font-sans">
-                <FileSpreadsheet className="w-4 h-4 text-orange-500" />
+          <div className="card-theme rounded-2xl overflow-hidden shadow-card-soft border border-slate-100">
+            <div className="px-6 py-4 border-b border-[#0F1B2E]/10 flex items-center justify-between">
+              <h2 className="text-sm font-bold text-[#0F1B2E] flex items-center gap-2 font-serif">
+                <FileSpreadsheet className="w-4 h-4 text-[#7b57ff]" />
                 <span>Active Procurement Plans (Live Firestore Stream)</span>
               </h2>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs font-mono">
-                <thead className="bg-slate-50/80 border-b border-slate-200 uppercase text-[10px] text-slate-500">
+                <thead className="bg-[#FAFAF8] border-b border-[#0F1B2E]/10 uppercase text-[10px] text-[#3E5871]">
                   <tr>
                     <th className="py-3.5 px-5">Commodity Cargo</th>
                     <th className="py-3.5 px-5">Route</th>
@@ -284,21 +285,21 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate }) => {
                     <th className="py-3.5 px-5 text-center">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-[#0F1B2E]/10">
                   {procurements.map((p) => (
-                    <tr key={p.id} className="hover:bg-slate-50/90 transition-colors">
-                      <td className="py-3.5 px-5 font-sans font-semibold text-slate-900">{p.commodity}</td>
-                      <td className="py-3.5 px-5 text-blue-700 font-semibold">
+                    <tr key={p.id} className="hover:bg-[#FAFAF8] transition-colors">
+                      <td className="py-3.5 px-5 font-sans font-bold text-[#0F1B2E]">{p.commodity}</td>
+                      <td className="py-3.5 px-5 text-[#2C5282] font-semibold">
                         {p.originPortName} → {p.destinationPortName}
                       </td>
-                      <td className="py-3.5 px-5 text-right font-bold text-slate-900 tabular-nums">
+                      <td className="py-3.5 px-5 text-right font-bold text-[#0F1B2E] tabular-nums">
                         {p.quantityMt ? p.quantityMt.toLocaleString() : '150,000'} MT
                       </td>
-                      <td className="py-3.5 px-5 text-right text-orange-600 font-bold tabular-nums">
+                      <td className="py-3.5 px-5 text-right text-[#7b57ff] font-bold tabular-nums">
                         ₹{p.budgetInrCrore} Cr
                       </td>
                       <td className="py-3.5 px-5 text-center">
-                        <span className="inline-block px-2.5 py-0.5 text-[9px] rounded-full font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                        <span className="inline-block px-3 py-0.5 text-[9px] rounded-full font-bold bg-[#F0F7F4] text-[#2D6A4F] border border-[#2D6A4F]/30">
                           {p.status}
                         </span>
                       </td>
@@ -313,4 +314,3 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate }) => {
     </div>
   );
 };
-

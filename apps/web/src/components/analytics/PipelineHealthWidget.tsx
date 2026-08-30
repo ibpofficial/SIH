@@ -70,13 +70,13 @@ export const PipelineHealthWidget: React.FC = () => {
     // Check 1: Python Decision Engine
     const t0 = performance.now();
     try {
-      const pyRes = await fetch('http://localhost:8000/', { method: 'GET' });
+      await fetch('http://localhost:8000/', { method: 'GET' });
       const t1 = performance.now();
       updated[0].status = 'HEALTHY';
       updated[0].latencyMs = Math.max(18, Math.round(t1 - t0));
       updated[0].portOrHost = 'FastAPI :8000 / Cloud';
       updated[0].details = 'XGBoost ML, Draft Solver & Composite Risk Solvers active';
-    } catch (err: any) {
+    } catch {
       updated[0].status = 'HEALTHY';
       updated[0].latencyMs = 28;
       updated[0].portOrHost = 'Cloud Decision Engine';
@@ -92,7 +92,7 @@ export const PipelineHealthWidget: React.FC = () => {
       updated[1].latencyMs = Math.max(15, Math.round(t3 - t2));
       updated[1].portOrHost = 'NestJS API / Cloud';
       updated[1].details = 'Procurement service, Rate overrides & RBAC active';
-    } catch (err: any) {
+    } catch {
       updated[1].status = 'HEALTHY';
       updated[1].latencyMs = 22;
       updated[1].portOrHost = 'Cloud API Gateway';
@@ -111,26 +111,26 @@ export const PipelineHealthWidget: React.FC = () => {
   const overallHealthy = services.every((s) => s.status === 'HEALTHY');
 
   return (
-    <div className="glass-card rounded-2xl p-5 shadow-sm space-y-4 font-sans border border-slate-200/80">
+    <div className="bg-white border border-[#0F1B2E]/10 rounded-xl p-5 shadow-xs space-y-4 font-sans">
       {/* Widget Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#0F1B2E]/10 pb-3">
         <div className="flex items-center space-x-2">
-          <div className="p-2 bg-indigo-50 rounded-xl border border-indigo-200">
-            <Activity className="w-5 h-5 text-indigo-600 animate-pulse" />
+          <div className="p-2 bg-[#FAF4EB] rounded-lg border border-[#A9793A]/30">
+            <Activity className="w-4 h-4 text-[#A9793A]" />
           </div>
           <div>
-            <h3 className="text-sm font-extrabold text-slate-900 tracking-tight font-display flex items-center gap-2">
+            <h3 className="text-sm font-bold text-[#0F1B2E] font-serif tracking-tight flex items-center gap-2">
               <span>Microservices & Pipeline Health Monitor</span>
-              <span className={`px-2 py-0.5 text-[10px] font-mono rounded-full font-bold border ${
+              <span className={`px-2 py-0.5 text-[10px] font-mono rounded font-bold border ${
                 overallHealthy
-                  ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
-                  : 'bg-amber-50 text-amber-800 border-amber-300'
+                  ? 'bg-[#F0F7F4] text-[#2D6A4F] border-[#2D6A4F]/30'
+                  : 'bg-[#FFF8E7] text-[#9C6615] border-[#9C6615]/30'
               }`}>
                 {overallHealthy ? 'ALL SERVICES OPERATIONAL ✓' : 'PARTIAL SERVICE DEGRADATION ⚠️'}
               </span>
             </h3>
-            <div className="text-xs font-mono text-slate-500">
-              Live Health Diagnostic Probe • Last Checked: <span className="font-bold text-slate-800">{lastCheckTime || 'Just now'}</span>
+            <div className="text-xs font-mono text-[#3E5871]">
+              Live Health Diagnostic Probe • Last Checked: <span className="font-bold text-[#0F1B2E]">{lastCheckTime || 'Just now'}</span>
             </div>
           </div>
         </div>
@@ -138,9 +138,9 @@ export const PipelineHealthWidget: React.FC = () => {
         <button
           onClick={runHealthDiagnostics}
           disabled={loading}
-          className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold font-mono inline-flex items-center space-x-1.5 transition-all cursor-pointer disabled:opacity-50"
+          className="px-3 py-1.5 bg-[#FAFAF8] hover:bg-slate-100 text-[#0F1B2E] border border-[#0F1B2E]/10 rounded-lg text-xs font-bold font-mono inline-flex items-center space-x-1.5 transition-all cursor-pointer disabled:opacity-50"
         >
-          <RefreshCw className={`w-3.5 h-3.5 text-indigo-600 ${loading ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`w-3.5 h-3.5 text-[#A9793A] ${loading ? 'animate-spin' : ''}`} />
           <span>{loading ? 'Probing Services...' : 'Run Diagnostic Check'}</span>
         </button>
       </div>
@@ -155,42 +155,42 @@ export const PipelineHealthWidget: React.FC = () => {
           return (
             <div
               key={idx}
-              className={`p-3.5 rounded-xl border transition-all space-y-2 relative ${
+              className={`p-3 rounded-lg border transition-all space-y-1.5 relative ${
                 isHealthy
-                  ? 'bg-emerald-50/40 border-emerald-200 hover:border-emerald-400'
+                  ? 'bg-[#F0F7F4]/50 border-[#2D6A4F]/30 hover:border-[#2D6A4F]'
                   : isDegraded
-                  ? 'bg-amber-50/50 border-amber-300 hover:border-amber-400'
-                  : 'bg-rose-50/50 border-rose-300 hover:border-rose-400'
+                  ? 'bg-[#FFF8E7]/50 border-[#9C6615]/30 hover:border-[#9C6615]'
+                  : 'bg-[#FDF2F2]/50 border-[#A32D2D]/30 hover:border-[#A32D2D]'
               }`}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-1.5">
-                  <IconComp className={`w-4 h-4 ${isHealthy ? 'text-emerald-600' : isDegraded ? 'text-amber-600' : 'text-rose-600'}`} />
-                  <span className="font-bold text-slate-900 font-sans text-xs">{svc.name}</span>
+                  <IconComp className={`w-3.5 h-3.5 ${isHealthy ? 'text-[#2D6A4F]' : isDegraded ? 'text-[#9C6615]' : 'text-[#A32D2D]'}`} />
+                  <span className="font-bold text-[#0F1B2E] font-sans text-xs">{svc.name}</span>
                 </div>
                 {isHealthy ? (
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#2D6A4F] shrink-0" />
                 ) : isDegraded ? (
-                  <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                  <AlertTriangle className="w-3.5 h-3.5 text-[#9C6615] shrink-0" />
                 ) : (
-                  <XCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                  <XCircle className="w-3.5 h-3.5 text-[#A32D2D] shrink-0" />
                 )}
               </div>
 
-              <div className="text-[10px] text-slate-500 font-sans">{svc.category}</div>
+              <div className="text-[10px] text-[#3E5871] font-sans">{svc.category}</div>
 
-              <div className="flex items-center justify-between text-[11px] pt-1 border-t border-slate-200/60">
-                <span className="text-slate-600 font-bold">{svc.portOrHost}</span>
+              <div className="flex items-center justify-between text-[11px] pt-1 border-t border-[#0F1B2E]/10">
+                <span className="text-[#3E5871] font-semibold">{svc.portOrHost}</span>
                 <span
                   className={`font-extrabold text-[10px] ${
-                    isHealthy ? 'text-emerald-700' : isDegraded ? 'text-amber-700' : 'text-rose-700'
+                    isHealthy ? 'text-[#2D6A4F]' : isDegraded ? 'text-[#9C6615]' : 'text-[#A32D2D]'
                   }`}
                 >
                   {svc.latencyMs > 0 ? `${svc.latencyMs}ms` : 'OFFLINE'}
                 </span>
               </div>
 
-              <div className="text-[9px] text-slate-600 leading-tight pt-1">
+              <div className="text-[9px] text-[#3E5871] leading-tight pt-0.5">
                 {svc.details}
               </div>
             </div>

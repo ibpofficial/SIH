@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "python main.py",
-    "start": "python main.py",
-    "test": "pytest tests/"
+    "dev": "py main.py || python main.py",
+    "start": "py main.py || python main.py",
+    "test": "py -m pytest tests/ || pytest tests/"
   }
 }
