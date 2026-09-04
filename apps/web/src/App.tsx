@@ -41,7 +41,7 @@ export const App: React.FC = () => {
       case '/vessels':
         return <VesselsPage />;
       case '/procurement':
-        return <ProcurementPage />;
+        return <ProcurementPage onNavigate={setActivePath} />;
       case '/ingestion':
         return <DataIngestionPage />;
       case '/architecture':

@@ -33,15 +33,17 @@ export const GlossaryPage: React.FC = () => {
           </p>
         </div>
 
-        <div className="relative w-full md:w-72 font-mono text-xs">
-          <Search className="w-4 h-4 text-[#3E5871] absolute left-3 top-2.5" />
-          <input
-            type="text"
-            placeholder="Search term, abbreviation, definition..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-[#FAFAF8] border border-[#0F1B2E]/10 rounded-lg pl-9 pr-3 py-2 text-[#0F1B2E] placeholder-[#3E5871] focus:outline-none focus:border-[#A9793A]"
-          />
+        <div className="w-full md:w-80">
+          <div className="inputForm">
+            <Search className="w-4 h-4 text-[#3E5871]" />
+            <input
+              type="text"
+              placeholder="Search term, abbreviation, definition..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="input"
+            />
+          </div>
         </div>
       </div>
 

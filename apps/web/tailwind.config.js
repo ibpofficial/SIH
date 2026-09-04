@@ -7,65 +7,86 @@ export default {
   theme: {
     extend: {
       colors: {
+        canvas: {
+          DEFAULT: '#FAFAF8',
+          card: '#FFFFFF',
+          subtle: '#F8FAFC',
+          input: '#FFFFFF',
+          border: '#E2E8F0'
+        },
+        cyanAccent: {
+          DEFAULT: '#0284C7',
+          hover: '#0369A1',
+          bright: '#0EA5E9',
+          glow: 'rgba(2, 132, 199, 0.15)',
+          border: 'rgba(2, 132, 199, 0.3)'
+        },
+        amberGold: {
+          DEFAULT: '#D97706',
+          bright: '#F59E0B',
+          dark: '#B45309',
+          glow: 'rgba(217, 119, 6, 0.15)'
+        },
         accentPurple: {
-          DEFAULT: '#7b57ff',
-          hover: '#9173ff',
-          light: '#F3F0FF'
+          DEFAULT: '#0284C7',
+          hover: '#0369A1',
+          light: '#F0F9FF'
         },
         navy: {
           DEFAULT: '#0F1B2E',
           900: '#0F1B2E',
-          800: '#1A2942',
-          700: '#2A3C58',
-          600: '#3B4E6B',
-          500: '#4D6282',
-          100: '#F0F4F8',
-          50: '#F7FAFC'
+          800: '#1E293B',
+          700: '#334155',
+          600: '#475569',
+          500: '#64748B',
+          100: '#F1F5F9',
+          50: '#F8FAFC'
         },
         steel: {
-          DEFAULT: '#3E5871',
-          900: '#253748',
-          700: '#3E5871',
-          500: '#5A7692',
-          300: '#8DA4BE',
-          100: '#E4ECF3',
-          50: '#F4F7FA'
+          DEFAULT: '#475569',
+          900: '#0F172A',
+          700: '#334155',
+          500: '#64748B',
+          300: '#CBD5E1',
+          100: '#F1F5F9',
+          50: '#F8FAFC'
         },
         brass: {
-          DEFAULT: '#A9793A',
-          dark: '#8C6028',
-          light: '#C49859',
-          subtle: '#FAF4EB',
-          ring: '#E0C097'
+          DEFAULT: '#D97706',
+          dark: '#B45309',
+          light: '#F59E0B',
+          subtle: '#FFFBEB',
+          ring: '#F59E0B'
         },
         chart: {
           bg: '#FAFAF8',
           surface: '#FFFFFF',
-          border: 'rgba(15, 27, 46, 0.08)'
+          border: 'rgba(15, 23, 42, 0.08)'
         },
         status: {
-          feasible: '#2D6A4F',
-          feasibleBg: '#F0F7F4',
-          feasibleBorder: '#B7E4C7',
-          rejected: '#A32D2D',
-          rejectedBg: '#FDF2F2',
-          rejectedBorder: '#F87171',
-          warning: '#9C6615',
-          warningBg: '#FFF8E7',
+          feasible: '#059669',
+          feasibleBg: '#ECFDF5',
+          feasibleBorder: '#A7F3D0',
+          rejected: '#DC2626',
+          rejectedBg: '#FEF2F2',
+          rejectedBorder: '#FCA5A5',
+          warning: '#D97706',
+          warningBg: '#FFFBEB',
           warningBorder: '#FDE68A',
-          info: '#2C5282',
-          infoBg: '#EBF8FF',
-          infoBorder: '#90CDF4'
+          info: '#0284C7',
+          infoBg: '#F0F9FF',
+          infoBorder: '#BAE6FD'
         }
       },
       fontFamily: {
         serif: ['"Fraunces"', '"Newsreader"', 'Georgia', 'serif'],
         display: ['"Fraunces"', '"Newsreader"', 'Georgia', 'serif'],
-        sans: ['"IBM Plex Sans"', 'system-ui', '-apple-system', 'sans-serif'],
-        mono: ['"IBM Plex Mono"', '"JetBrains Mono"', 'Consolas', 'monospace'],
+        sans: ['"IBM Plex Sans"', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        mono: ['"JetBrains Mono"', '"IBM Plex Mono"', 'Consolas', 'monospace'],
       },
       boxShadow: {
-        'card-soft': '2px 2px 20px rgba(0, 0, 0, 0.062)',
+        'card-soft': '0 4px 20px rgba(0, 0, 0, 0.06)',
+        'cyan-glow': '0 0 15px rgba(2, 132, 199, 0.25)',
       },
       borderRadius: {
         '2xl': '1rem',

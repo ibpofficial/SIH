@@ -82,7 +82,12 @@ export const RiskFactorBreakdownSchema = z.object({
   marketVolatilityScore: z.number(),
   compositeRiskScore: z.number(),
   riskLevel: z.enum(['LOW', 'MODERATE', 'HIGH', 'CRITICAL']),
-  activeAlerts: z.array(z.string())
+  activeAlerts: z.array(z.string()),
+  counterpartyRiskScore: z.number().optional(),
+  bunkerVolatilityScore: z.number().optional(),
+  monsoonWeatherRiskScore: z.number().optional(),
+  geopoliticalCanalRiskScore: z.number().optional(),
+  historicalAccuracyPct: z.number().optional()
 });
 
 export type RiskFactorBreakdown = z.infer<typeof RiskFactorBreakdownSchema>;
@@ -92,10 +97,21 @@ export const AiExplanationSchema = z.object({
   reasoningParagraph: z.string(),
   caveatsText: z.string(),
   groundedDataSummary: z.string(),
-  isAiGenerated: z.boolean()
+  isAiGenerated: z.boolean(),
+  counterargumentsText: z.string().optional(),
+  decisionPivotConditions: z.string().optional()
 });
 
 export type AiExplanation = z.infer<typeof AiExplanationSchema>;
+
+export interface LineageComparison {
+  previousRunAt: string;
+  previousCostUsd: number;
+  costChangePct: number;
+  previousRiskScore: number;
+  riskChange: number;
+  summary: string;
+}
 
 export interface FullAnalysisReport {
   procurementRequestId: string;
@@ -110,6 +126,7 @@ export interface FullAnalysisReport {
   idleOptions: IdleOption[];
   riskAnalysis: RiskFactorBreakdown;
   aiExplanation: AiExplanation;
+  lineageComparison?: LineageComparison;
   generatedAt: string;
 }
 

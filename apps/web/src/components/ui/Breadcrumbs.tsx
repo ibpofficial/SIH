@@ -36,22 +36,22 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ activePath, onNavigate
   const items = getBreadcrumbItems();
 
   return (
-    <nav className="flex items-center space-x-1.5 font-mono text-[11px] text-[#3E5871] mb-3" aria-label="Breadcrumb">
+    <nav className="flex items-center space-x-1.5 font-mono text-[11px] text-slate-400 mb-3" aria-label="Breadcrumb">
       <button
         onClick={() => onNavigate('/')}
-        className="hover:text-[#0F1B2E] transition-colors flex items-center gap-1 cursor-pointer"
+        className="hover:text-cyan-400 transition-colors flex items-center gap-1 cursor-pointer"
       >
-        <Home className="w-3 h-3 text-[#3E5871]" />
+        <Home className="w-3 h-3 text-slate-400" />
         <span>FreightIQ</span>
       </button>
 
       {items.map((item, idx) => (
         <React.Fragment key={idx}>
-          <ChevronRight className="w-3 h-3 text-[#3E5871]/50 shrink-0" />
+          <ChevronRight className="w-3 h-3 text-slate-600 shrink-0" />
           <button
             onClick={() => onNavigate(item.path)}
             className={`transition-colors cursor-pointer ${
-              idx === items.length - 1 ? 'font-bold text-[#0F1B2E]' : 'hover:text-[#0F1B2E]'
+              idx === items.length - 1 ? 'font-bold text-cyan-400' : 'hover:text-slate-200'
             }`}
           >
             {item.label}
@@ -61,8 +61,8 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ activePath, onNavigate
 
       {requestTitle && (
         <>
-          <ChevronRight className="w-3 h-3 text-[#3E5871]/50 shrink-0" />
-          <span className="font-bold text-[#A9793A] truncate max-w-xs">{requestTitle}</span>
+          <ChevronRight className="w-3 h-3 text-slate-600 shrink-0" />
+          <span className="font-bold text-amber-400 truncate max-w-xs">{requestTitle}</span>
         </>
       )}
     </nav>
