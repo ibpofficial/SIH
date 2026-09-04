@@ -4,7 +4,7 @@ import { api } from '../lib/api';
 import { seedFirestoreIfEmpty } from '../lib/firebaseSeed';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import { FullAnalysisReport } from '@freightiq/shared-types';
+import { FullAnalysisReport, ContractStrategyOption, VesselRecommendation, IdleOption } from '@freightiq/shared-types';
 import { Breadcrumbs } from '../components/ui/Breadcrumbs';
 import { formatUsdAndInr, formatInrPrimary, formatInrCrore, formatInrPerMt } from '../lib/currency';
 import { exportReportToPdf } from '../lib/pdfExporter';
@@ -707,8 +707,8 @@ export const ProcurementPage: React.FC<{ onNavigate?: (path: string) => void }> 
         <div id="analysis-report-container" className="space-y-6 animate-in fade-in card-theme p-6 rounded-2xl border border-slate-200 shadow-card-soft">
           {/* Executive Summary Hero Banner */}
           {(() => {
-            const recStrat = analysisReport.contractStrategies?.find((s) => s.isRecommended) || analysisReport.contractStrategies?.[0];
-            const spotStrat = analysisReport.contractStrategies?.find((s) => s.strategyType === 'SPOT') || analysisReport.contractStrategies?.[1];
+            const recStrat = analysisReport.contractStrategies?.find((s: ContractStrategyOption) => s.isRecommended) || analysisReport.contractStrategies?.[0];
+            const spotStrat = analysisReport.contractStrategies?.find((s: ContractStrategyOption) => s.strategyType === 'SPOT') || analysisReport.contractStrategies?.[1];
             const savingsUsd = spotStrat && recStrat ? (spotStrat.estimatedTotalCostUsd - recStrat.estimatedTotalCostUsd) : 1056600;
 
             return (
@@ -795,7 +795,7 @@ export const ProcurementPage: React.FC<{ onNavigate?: (path: string) => void }> 
                   <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                   <span>Feasible Vessel Options (Draft & LOA Cleared)</span>
                 </div>
-                {analysisReport.vesselRecommendations?.map((v) => (
+                {analysisReport.vesselRecommendations?.map((v: VesselRecommendation) => (
                   <div key={v.vesselTypeId} className="p-4 bg-white border border-emerald-200 rounded-xl space-y-2 shadow-xs">
                     <div className="flex items-center justify-between">
                       <span className="font-bold text-[#0F1B2E] font-serif text-sm">{v.vesselTypeName}</span>
@@ -820,7 +820,7 @@ export const ProcurementPage: React.FC<{ onNavigate?: (path: string) => void }> 
                   <AlertCircle className="w-4 h-4 text-red-600" />
                   <span>Physically Excluded Vessels (Draft / LOA Violations)</span>
                 </div>
-                {analysisReport.rejectedVessels?.map((v) => (
+                {analysisReport.rejectedVessels?.map((v: VesselRecommendation) => (
                   <div key={v.vesselTypeId} className="p-4 bg-red-50/50 border border-red-200 rounded-xl space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="font-bold text-red-900 font-serif text-sm">{v.vesselTypeName}</span>
@@ -849,7 +849,7 @@ export const ProcurementPage: React.FC<{ onNavigate?: (path: string) => void }> 
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
-              {analysisReport.contractStrategies?.map((strat) => (
+              {analysisReport.contractStrategies?.map((strat: ContractStrategyOption) => (
                 <div
                   key={strat.strategyType}
                   className={`p-5 rounded-2xl border space-y-3 transition-all ${
@@ -904,7 +904,7 @@ export const ProcurementPage: React.FC<{ onNavigate?: (path: string) => void }> 
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-mono text-xs">
-                {analysisReport.idleOptions.map((opt, idx) => (
+                {analysisReport.idleOptions.map((opt: IdleOption, idx: number) => (
                   <div key={idx} className="p-4 bg-[#FAFAF8] border border-slate-200 rounded-xl space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="font-bold text-[#0F1B2E] font-serif text-sm">{opt.optionTitle}</span>
@@ -1061,7 +1061,7 @@ export const ProcurementPage: React.FC<{ onNavigate?: (path: string) => void }> 
 
               {/* Simulation Result Calculation Box */}
               {(() => {
-                const recStrat = analysisReport.contractStrategies?.find((s) => s.isRecommended) || analysisReport.contractStrategies?.[0];
+                const recStrat = analysisReport.contractStrategies?.find((s: ContractStrategyOption) => s.isRecommended) || analysisReport.contractStrategies?.[0];
                 const origCost = recStrat?.estimatedTotalCostUsd || 4253400;
                 const origRisk = analysisReport.riskAnalysis?.compositeRiskScore || 34.2;
 
