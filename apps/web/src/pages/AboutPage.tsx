@@ -677,7 +677,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onNavigate }) => {
                       </div>
                       <div>
                         <div className="flex items-center space-x-2">
-                          <IconComp className="w-4 h-4 text-sky-600 shrink-0" />
+                          <IconComp className="w-5 h-5 text-blue-600 shrink-0 stroke-[2.5]" />
                           <h3 className="font-bold text-[#0F1B2E] text-base font-serif">{sys.name}</h3>
                         </div>
                         <div className="text-xs text-slate-500 font-mono mt-0.5">

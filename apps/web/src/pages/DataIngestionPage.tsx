@@ -142,10 +142,10 @@ export const DataIngestionPage: React.FC = () => {
       <Breadcrumbs activePath="/ingestion" onNavigate={() => {}} />
 
       {/* Title Header */}
-      <div className="card-theme rounded-2xl p-6 shadow-card-soft border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="card-theme bg-white p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-[#0F1B2E] flex items-center gap-2 font-serif">
-            <Database className="w-5 h-5 text-sky-600" />
+          <h1 className="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2 font-sans">
+            <Database className="w-5 h-5 text-slate-400" />
             <span>Data Ingestion Studio (3-Stage Validation Pipeline)</span>
           </h1>
           <p className="text-xs text-slate-500 font-mono mt-1">
@@ -158,23 +158,23 @@ export const DataIngestionPage: React.FC = () => {
           <span className="text-[10px] text-slate-500 font-bold uppercase">Sample Templates:</span>
           <button
             onClick={() => handleDownloadSample('VESSEL')}
-            className="px-3 py-1.5 bg-[#FAFAF8] hover:bg-slate-100 text-[#0F1B2E] rounded-xl border border-slate-200 hover:border-sky-500 font-bold cursor-pointer flex items-center gap-1.5 text-[11px] transition-all"
+            className="px-3 py-1.5 bg-white text-slate-700 rounded-lg border border-slate-200 hover:bg-slate-100 font-bold cursor-pointer flex items-center gap-1.5 text-[11px] transition-all"
           >
-            <Download className="w-3.5 h-3.5 text-sky-600" />
+            <Download className="w-3.5 h-3.5 text-slate-400" />
             <span>vessels.csv</span>
           </button>
           <button
             onClick={() => handleDownloadSample('PORT')}
-            className="px-3 py-1.5 bg-[#FAFAF8] hover:bg-slate-100 text-[#0F1B2E] rounded-xl border border-slate-200 hover:border-sky-500 font-bold cursor-pointer flex items-center gap-1.5 text-[11px] transition-all"
+            className="px-3 py-1.5 bg-white text-slate-700 rounded-lg border border-slate-200 hover:bg-slate-100 font-bold cursor-pointer flex items-center gap-1.5 text-[11px] transition-all"
           >
-            <Download className="w-3.5 h-3.5 text-sky-600" />
+            <Download className="w-3.5 h-3.5 text-slate-400" />
             <span>ports.csv</span>
           </button>
           <button
             onClick={() => handleDownloadSample('FREIGHT_RATE')}
-            className="px-3 py-1.5 bg-[#FAFAF8] hover:bg-slate-100 text-amber-700 rounded-xl border border-slate-200 hover:border-amber-500 font-bold cursor-pointer flex items-center gap-1.5 text-[11px] transition-all"
+            className="px-3 py-1.5 bg-white text-slate-700 rounded-lg border border-slate-200 hover:bg-slate-100 font-bold cursor-pointer flex items-center gap-1.5 text-[11px] transition-all"
           >
-            <Download className="w-3.5 h-3.5 text-amber-600" />
+            <Download className="w-3.5 h-3.5 text-slate-400" />
             <span>freight_history.csv</span>
           </button>
         </div>
@@ -182,26 +182,26 @@ export const DataIngestionPage: React.FC = () => {
 
       {/* 3-STAGE PIPELINE INDICATOR */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
-        <div className="p-4 card-theme rounded-2xl border border-slate-200 border-l-4 border-l-sky-600 space-y-1.5 shadow-card-soft">
-          <div className="flex items-center justify-between font-bold text-[#0F1B2E] font-serif">
+        <div className="p-4 card-theme bg-white space-y-1.5">
+          <div className="flex items-center justify-between font-bold text-slate-900 font-sans">
             <span>Stage 1: Schema Integrity</span>
-            <Layers className="w-4 h-4 text-sky-600" />
+            <Layers className="w-4 h-4 text-slate-400" />
           </div>
           <p className="text-[11px] text-slate-500 font-sans leading-relaxed">Parses CSV data, headers, column types & required field values.</p>
         </div>
 
-        <div className="p-4 card-theme rounded-2xl border border-slate-200 border-l-4 border-l-amber-600 space-y-1.5 shadow-card-soft">
-          <div className="flex items-center justify-between font-bold text-[#0F1B2E] font-serif">
+        <div className="p-4 card-theme bg-white space-y-1.5">
+          <div className="flex items-center justify-between font-bold text-slate-900 font-sans">
             <span>Stage 2: Business Rules</span>
-            <ShieldCheck className="w-4 h-4 text-amber-600" />
+            <ShieldCheck className="w-4 h-4 text-slate-400" />
           </div>
           <p className="text-[11px] text-slate-500 font-sans leading-relaxed">Verifies draft limits, non-negative values & date range sanity.</p>
         </div>
 
-        <div className="p-4 card-theme rounded-2xl border border-slate-200 border-l-4 border-l-emerald-600 space-y-1.5 shadow-card-soft">
-          <div className="flex items-center justify-between font-bold text-[#0F1B2E] font-serif">
+        <div className="p-4 card-theme bg-white space-y-1.5">
+          <div className="flex items-center justify-between font-bold text-slate-900 font-sans">
             <span>Stage 3: Referential Integrity</span>
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <CheckCircle2 className="w-4 h-4 text-slate-400" />
           </div>
           <p className="text-[11px] text-slate-500 font-sans leading-relaxed">Maps foreign keys to registered ports & vessel classes before DB commit.</p>
         </div>

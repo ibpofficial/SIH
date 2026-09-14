@@ -104,14 +104,15 @@ export const ArchitecturePage: React.FC = () => {
       <Breadcrumbs activePath="/architecture" onNavigate={() => {}} />
 
       {/* Header */}
-      <div className="card-theme bg-white border border-slate-200 rounded-2xl p-6 shadow-card-soft flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="card-theme bg-white p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center space-x-2">
-            <h1 className="text-xl font-bold tracking-tight text-[#0F1B2E] font-serif flex items-center gap-2">
-              <Cpu className="w-5 h-5 text-sky-600" />
+            <h1 className="text-xl font-bold tracking-tight text-slate-900 font-sans flex items-center gap-2">
+              <Cpu className="w-5 h-5 text-blue-600" />
               <span>How FreightIQ Works: 5 System Engines Stack</span>
             </h1>
-            <span className="px-3 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-mono rounded-full font-bold border border-emerald-200">
+            <span className="text-[11px] font-mono font-bold text-emerald-700 flex items-center gap-1">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               SIH26006 LIVE ARCHITECTURE
             </span>
           </div>
@@ -123,9 +124,9 @@ export const ArchitecturePage: React.FC = () => {
         <div className="flex items-center space-x-2 font-mono text-xs">
           <button
             onClick={() => setActiveTab('ENGINES')}
-            className={`px-4 py-2 rounded-xl font-bold transition-all cursor-pointer ${
+            className={`px-4 py-2 rounded-lg font-bold transition-all cursor-pointer ${
               activeTab === 'ENGINES'
-                ? 'bg-[#0F1B2E] text-white shadow-xs'
+                ? 'bg-slate-900 text-white shadow-md'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
             }`}
           >
@@ -133,9 +134,9 @@ export const ArchitecturePage: React.FC = () => {
           </button>
           <button
             onClick={() => setActiveTab('DATA_FLOW')}
-            className={`px-4 py-2 rounded-xl font-bold transition-all cursor-pointer ${
+            className={`px-4 py-2 rounded-lg font-bold transition-all cursor-pointer ${
               activeTab === 'DATA_FLOW'
-                ? 'bg-[#0F1B2E] text-white shadow-xs'
+                ? 'bg-slate-900 text-white shadow-md'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
             }`}
           >
@@ -143,9 +144,9 @@ export const ArchitecturePage: React.FC = () => {
           </button>
           <button
             onClick={() => setActiveTab('PROBLEM_SOLVED')}
-            className={`px-4 py-2 rounded-xl font-bold transition-all cursor-pointer ${
+            className={`px-4 py-2 rounded-lg font-bold transition-all cursor-pointer ${
               activeTab === 'PROBLEM_SOLVED'
-                ? 'bg-[#0F1B2E] text-white shadow-xs'
+                ? 'bg-slate-900 text-white shadow-md'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
             }`}
           >
@@ -157,8 +158,8 @@ export const ArchitecturePage: React.FC = () => {
       {/* TAB 1: 5 Engines Grid */}
       {activeTab === 'ENGINES' && (
         <div className="space-y-4">
-          <div className="bg-sky-50 border border-sky-200 rounded-2xl p-4 text-xs text-sky-900 flex items-start space-x-3">
-            <CheckCircle2 className="w-5 h-5 text-sky-600 shrink-0 mt-0.5" />
+          <div className="card-theme bg-blue-50/50 p-4 text-xs text-blue-950 flex items-start space-x-3">
+            <CheckCircle2 className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
             <div>
               <span className="font-bold font-sans">Every component listed below runs automatically in the cloud. </span>
               <span className="font-mono">
@@ -173,13 +174,11 @@ export const ArchitecturePage: React.FC = () => {
               return (
                 <div
                   key={srv.id}
-                  className="card-theme bg-white rounded-2xl p-6 border border-slate-200 hover:border-sky-400 transition-all shadow-card-soft space-y-4"
+                  className="card-theme bg-white p-6 space-y-4"
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
                     <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-[#0F1B2E]">
-                        <IconComp className="w-5 h-5 text-sky-600" />
-                      </div>
+                      <IconComp className="w-6 h-6 text-blue-600 shrink-0 stroke-[2.5]" />
                       <div>
                         <h3 className="font-bold text-[#0F1B2E] text-base font-serif">{srv.name}</h3>
                         <div className="text-xs text-slate-500 font-mono">

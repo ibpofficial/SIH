@@ -39,18 +39,18 @@ export const RoadmapPage: React.FC = () => {
       <Breadcrumbs activePath="/roadmap" onNavigate={() => {}} />
 
       {/* Title Header */}
-      <div className="bg-white border border-[#0F1B2E]/10 rounded-xl p-5 shadow-xs flex items-center justify-between">
+      <div className="card-theme bg-white p-6 flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-[#0F1B2E] flex items-center gap-2 font-serif">
-            <Compass className="w-5 h-5 text-[#A9793A]" />
+          <h1 className="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2 font-sans">
+            <Compass className="w-5 h-5 text-amber-600" />
             <span>Future Scope & Production Roadmap (SIH26006)</span>
           </h1>
-          <p className="text-xs text-[#3E5871] font-mono mt-0.5">
+          <p className="text-xs text-slate-500 font-mono mt-0.5">
             Planned Technical Extensions for Full Commercial FreightIQ Production Rollout
           </p>
         </div>
-        <span className="px-3 py-1 bg-[#FAF4EB] text-[#A9793A] border border-[#A9793A]/30 text-xs font-bold rounded font-mono">
-          SIH26006 Roadmap
+        <span className="text-xs font-bold font-mono text-amber-700">
+          • SIH26006 Roadmap
         </span>
       </div>
 
@@ -59,18 +59,16 @@ export const RoadmapPage: React.FC = () => {
         {items.map((item, idx) => {
           const Icon = item.icon;
           return (
-            <div key={idx} className="bg-white border border-[#0F1B2E]/10 rounded-xl p-5 shadow-xs space-y-3 font-mono">
+            <div key={idx} className="card-theme bg-white p-5 space-y-3 font-mono">
               <div className="flex items-center justify-between">
-                <div className={`w-8 h-8 rounded-lg ${item.color} flex items-center justify-center font-bold border`}>
-                  <Icon className="w-4 h-4" />
-                </div>
-                <span className="px-2.5 py-0.5 bg-[#FAFAF8] text-[#0F1B2E] rounded text-[10px] font-bold border border-[#0F1B2E]/10">
-                  {item.status}
+                <Icon className="w-5 h-5 text-slate-400" />
+                <span className="text-[10px] font-bold font-mono text-slate-700">
+                  • {item.status}
                 </span>
               </div>
 
-              <div className="font-bold text-[#0F1B2E] text-sm font-serif">{item.title}</div>
-              <p className="text-xs text-[#3E5871] font-sans leading-relaxed">{item.description}</p>
+              <div className="font-bold text-slate-900 text-sm font-sans">{item.title}</div>
+              <p className="text-xs text-slate-500 font-sans leading-relaxed">{item.description}</p>
             </div>
           );
         })}

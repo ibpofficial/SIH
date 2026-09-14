@@ -109,10 +109,10 @@ export const AuditPage: React.FC = () => {
       <Breadcrumbs activePath="/audit" onNavigate={() => {}} />
 
       {/* Header Banner */}
-      <div className="card-theme rounded-2xl p-6 shadow-card-soft border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="card-theme bg-white p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-[#0F1B2E] flex items-center gap-2 font-serif">
-            <ShieldCheck className="w-5 h-5 text-emerald-600" />
+          <h1 className="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2 font-sans">
+            <ShieldCheck className="w-5 h-5 text-slate-400" />
             <span>Governance & Immutable Audit Log Trail</span>
           </h1>
           <p className="text-xs text-slate-500 font-mono mt-1">
@@ -123,13 +123,13 @@ export const AuditPage: React.FC = () => {
         <div className="flex items-center space-x-3">
           {/* Search Input using Reference 50px Pattern */}
           <div className="inputForm w-64 !h-[42px]">
-            <Search className="w-4 h-4 text-sky-600 shrink-0" />
+            <Search className="w-4 h-4 text-slate-400 shrink-0" />
             <input
               type="text"
               placeholder="Filter audit logs..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="input font-mono text-xs text-[#0F1B2E]"
+              className="input font-mono text-xs text-slate-900"
             />
           </div>
 
@@ -137,7 +137,7 @@ export const AuditPage: React.FC = () => {
             onClick={fetchLogs}
             className="decline-button-theme text-xs font-mono font-bold flex items-center gap-1.5 border border-slate-200"
           >
-            <RefreshCw className={`w-3.5 h-3.5 text-sky-600 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 text-slate-500 ${loading ? 'animate-spin' : ''}`} />
             <span>Refresh</span>
           </button>
         </div>

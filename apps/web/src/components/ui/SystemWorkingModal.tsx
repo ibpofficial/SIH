@@ -100,9 +100,7 @@ export const SystemWorkingModal: React.FC<SystemWorkingModalProps> = ({ isOpen, 
         {/* Header */}
         <div className="bg-[#0F1B2E] text-white p-6 flex items-center justify-between border-b border-slate-700">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-2xl bg-sky-500/20 border border-sky-400/30 flex items-center justify-center text-sky-400">
-              <Zap className="w-5 h-5 animate-pulse" />
-            </div>
+            <Zap className="w-5 h-5 text-slate-400 shrink-0 animate-pulse" />
             <div>
               <div className="flex items-center space-x-2">
                 <h2 className="text-lg font-bold font-serif tracking-tight">System Architecture & Live Decision Stack</h2>
@@ -185,9 +183,7 @@ export const SystemWorkingModal: React.FC<SystemWorkingModalProps> = ({ isOpen, 
                     >
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
                         <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-[#0F1B2E]">
-                            <IconComp className="w-5 h-5 text-sky-600" />
-                          </div>
+                          <IconComp className="w-5 h-5 text-slate-400 shrink-0" />
                           <div>
                             <h3 className="font-bold text-[#0F1B2E] text-sm font-sans">{srv.name}</h3>
                             <div className="text-[11px] text-slate-500 font-mono">

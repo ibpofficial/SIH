@@ -106,19 +106,17 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate }) => {
         </div>
       </div>
 
-      {/* QUICK LAUNCH ACTIONS TOOLBAR (Uiverse Inspired Square-Box Style) */}
+      {/* QUICK LAUNCH ACTIONS TOOLBAR */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 font-mono text-xs">
         <button
           onClick={() => onNavigate('/procurement')}
-          className="p-4 card-theme bg-white rounded-2xl border border-blue-100 flex items-center justify-between text-left hover:border-blue-300 transition-colors cursor-pointer group"
+          className="p-4 bg-white rounded-lg border border-slate-200/90 shadow-[0_4px_16px_rgba(0,0,0,0.03)] flex items-center justify-between text-left hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all duration-200 cursor-pointer group"
         >
           <div className="flex items-center space-x-3">
-            <div className="w-9 h-9 rounded-full bg-blue-500 text-white flex items-center justify-center shrink-0">
-              <Zap className="w-4 h-4" />
-            </div>
+            <TrendingUp className="w-5 h-5 text-blue-600 shrink-0 stroke-[2.5]" />
             <div>
-              <div className="text-xs font-bold text-slate-900 font-sans group-hover:text-blue-600">Run Chartering Analysis</div>
-              <div className="text-[10px] text-slate-500">Evaluate Spot vs COA</div>
+              <div className="text-xs font-bold text-slate-900 font-sans group-hover:text-blue-600 transition-colors">Run Chartering Analysis</div>
+              <div className="text-[10px] text-slate-500 font-medium">Evaluate Spot vs COA</div>
             </div>
           </div>
           <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 transition-colors" />
@@ -126,47 +124,41 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate }) => {
 
         <button
           onClick={() => onNavigate('/about')}
-          className="p-4 card-theme bg-white rounded-2xl border border-blue-100 flex items-center justify-between text-left hover:border-blue-300 transition-colors cursor-pointer group"
+          className="p-4 bg-white rounded-lg border border-slate-200/90 shadow-[0_4px_16px_rgba(0,0,0,0.03)] flex items-center justify-between text-left hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all duration-200 cursor-pointer group"
         >
           <div className="flex items-center space-x-3">
-            <div className="w-9 h-9 rounded-full bg-blue-500 text-white flex items-center justify-center shrink-0">
-              <Info className="w-4 h-4" />
-            </div>
+            <Layers className="w-5 h-5 text-sky-600 shrink-0 stroke-[2.5]" />
             <div>
-              <div className="text-xs font-bold text-slate-900 font-sans group-hover:text-blue-600">About Platform Systems</div>
-              <div className="text-[10px] text-slate-500">10 Systems Breakdown</div>
+              <div className="text-xs font-bold text-slate-900 font-sans group-hover:text-sky-600 transition-colors">About Platform Systems</div>
+              <div className="text-[10px] text-slate-500 font-medium">10 Systems Breakdown</div>
             </div>
           </div>
-          <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 transition-colors" />
+          <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-sky-600 transition-colors" />
         </button>
 
         <button
           onClick={() => onNavigate('/ingestion')}
-          className="p-4 card-theme bg-white rounded-2xl border border-blue-100 flex items-center justify-between text-left hover:border-blue-300 transition-colors cursor-pointer group"
+          className="p-4 bg-white rounded-lg border border-slate-200/90 shadow-[0_4px_16px_rgba(0,0,0,0.03)] flex items-center justify-between text-left hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all duration-200 cursor-pointer group"
         >
           <div className="flex items-center space-x-3">
-            <div className="w-9 h-9 rounded-full bg-blue-500 text-white flex items-center justify-center shrink-0">
-              <Upload className="w-4 h-4" />
-            </div>
+            <Database className="w-5 h-5 text-amber-600 shrink-0 stroke-[2.5]" />
             <div>
-              <div className="text-xs font-bold text-slate-900 font-sans group-hover:text-blue-600">Import Market Feeds</div>
-              <div className="text-[10px] text-slate-500">3-Stage CSV Validation</div>
+              <div className="text-xs font-bold text-slate-900 font-sans group-hover:text-amber-600 transition-colors">Import Market Feeds</div>
+              <div className="text-[10px] text-slate-500 font-medium">3-Stage CSV Validation</div>
             </div>
           </div>
-          <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 transition-colors" />
+          <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-amber-600 transition-colors" />
         </button>
 
         <button
           onClick={() => onNavigate('/audit')}
-          className="p-4 card-theme bg-white rounded-2xl border border-blue-100 flex items-center justify-between text-left hover:border-blue-300 transition-colors cursor-pointer group"
+          className="p-4 bg-white rounded-lg border border-slate-200/90 shadow-[0_4px_16px_rgba(0,0,0,0.03)] flex items-center justify-between text-left hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all duration-200 cursor-pointer group"
         >
           <div className="flex items-center space-x-3">
-            <div className="w-9 h-9 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0">
-              <ShieldCheck className="w-4 h-4" />
-            </div>
+            <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0 stroke-[2.5]" />
             <div>
-              <div className="text-xs font-bold text-slate-900 font-sans group-hover:text-emerald-600">Governance & Audit</div>
-              <div className="text-[10px] text-slate-500">Immutable Logs</div>
+              <div className="text-xs font-bold text-slate-900 font-sans group-hover:text-emerald-600 transition-colors">Governance & Audit</div>
+              <div className="text-[10px] text-slate-500 font-medium">Immutable Logs</div>
             </div>
           </div>
           <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-emerald-600 transition-colors" />
@@ -176,90 +168,82 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate }) => {
       {/* 4 HIGH IMPACT TOP KPI STAT CARDS WITH SPARKLINE INDICATORS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* KPI 1: Estimated Savings */}
-        <div className="card-theme rounded-2xl p-5 shadow-card-soft border border-slate-200 space-y-2 hover:border-emerald-500/50 transition-all">
+        <div className="bg-white rounded-lg p-5 border border-slate-200/90 shadow-[0_4px_16px_rgba(0,0,0,0.03)] space-y-2 hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all duration-200">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold font-mono uppercase text-slate-500">Opt. Savings (FY26)</span>
-            <div className="p-2 bg-emerald-50 text-emerald-700 rounded-xl border border-emerald-200">
-              <DollarSign className="w-4 h-4" />
-            </div>
+            <span className="text-[11px] font-bold font-mono uppercase text-slate-400">Opt. Savings (FY26)</span>
+            <DollarSign className="w-5 h-5 text-slate-400" />
           </div>
           <div className="flex items-baseline justify-between">
-            <div className="text-3xl font-bold text-[#0F1B2E] font-mono tabular-nums font-serif">
+            <div className="text-2xl font-bold text-slate-900 font-mono tabular-nums font-serif">
               ₹42.8 Cr
             </div>
-            <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-mono font-bold rounded-md flex items-center gap-1">
-              <TrendingUp className="w-3 h-3" /> +14.2%
+            <span className="font-bold text-emerald-700 text-xs font-mono flex items-center gap-1">
+              <TrendingUp className="w-3.5 h-3.5" /> +14.2%
             </span>
           </div>
           <div className="text-[11px] text-slate-500 font-mono flex items-center justify-between pt-1">
             <span>vs Spot Benchmark</span>
-            <span className="text-emerald-700 font-bold">COA Strategy</span>
+            <span className="text-slate-900 font-bold">COA Strategy</span>
           </div>
         </div>
 
         {/* KPI 2: Berth Wait Time */}
-        <div className="card-theme rounded-2xl p-5 shadow-card-soft border border-slate-200 space-y-2 hover:border-amber-500/50 transition-all">
+        <div className="bg-white rounded-lg p-5 border border-slate-200/90 shadow-[0_4px_16px_rgba(0,0,0,0.03)] space-y-2 hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all duration-200">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold font-mono uppercase text-slate-500">Avg Berth Waiting</span>
-            <div className="p-2 bg-amber-50 text-amber-700 rounded-xl border border-amber-200">
-              <Clock className="w-4 h-4" />
-            </div>
+            <span className="text-[11px] font-bold font-mono uppercase text-slate-400">Avg Berth Waiting</span>
+            <Clock className="w-5 h-5 text-slate-400" />
           </div>
           <div className="flex items-baseline justify-between">
-            <div className="text-3xl font-bold text-[#0F1B2E] font-mono tabular-nums font-serif">
+            <div className="text-2xl font-bold text-slate-900 font-mono tabular-nums font-serif">
               1.8 Days
             </div>
-            <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-mono font-bold rounded-md">
+            <span className="font-bold text-emerald-700 text-xs font-mono">
               -0.6d Better
             </span>
           </div>
           <div className="text-[11px] text-slate-500 font-mono flex items-center justify-between pt-1">
             <span>East Coast Terminals</span>
-            <span className="text-amber-700 font-bold">Paradip Priority</span>
+            <span className="text-slate-900 font-bold">Paradip Priority</span>
           </div>
         </div>
 
         {/* KPI 3: Fleet Optimization Rate */}
-        <div className="card-theme rounded-2xl p-5 shadow-card-soft border border-slate-200 space-y-2 hover:border-sky-500/50 transition-all">
+        <div className="bg-white rounded-lg p-5 border border-slate-200/90 shadow-[0_4px_16px_rgba(0,0,0,0.03)] space-y-2 hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all duration-200">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold font-mono uppercase text-slate-500">Draft Feasibility Rate</span>
-            <div className="p-2 bg-sky-50 text-sky-700 rounded-xl border border-sky-200">
-              <CheckCircle2 className="w-4 h-4" />
-            </div>
+            <span className="text-[11px] font-bold font-mono uppercase text-slate-400">Draft Feasibility Rate</span>
+            <CheckCircle2 className="w-5 h-5 text-slate-400" />
           </div>
           <div className="flex items-baseline justify-between">
-            <div className="text-3xl font-bold text-[#0F1B2E] font-mono tabular-nums font-serif">
+            <div className="text-2xl font-bold text-slate-900 font-mono tabular-nums font-serif">
               98.4%
             </div>
-            <span className="px-2 py-0.5 bg-sky-50 text-sky-700 border border-sky-200 text-[10px] font-mono font-bold rounded-md">
+            <span className="font-bold text-blue-700 text-xs font-mono">
               Optimal Match
             </span>
           </div>
           <div className="text-[11px] text-slate-500 font-mono flex items-center justify-between pt-1">
             <span>Zero Draft Violations</span>
-            <span className="text-sky-700 font-bold">Passed</span>
+            <span className="text-slate-900 font-bold">Passed</span>
           </div>
         </div>
 
         {/* KPI 4: Active Procurement Requests */}
-        <div className="card-theme rounded-2xl p-5 shadow-card-soft border border-slate-200 space-y-2 hover:border-sky-500/50 transition-all">
+        <div className="bg-white rounded-lg p-5 border border-slate-200/90 shadow-[0_4px_16px_rgba(0,0,0,0.03)] space-y-2 hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all duration-200">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold font-mono uppercase text-slate-500">Live Plans</span>
-            <div className="p-2 bg-sky-50 text-sky-700 rounded-xl border border-sky-200">
-              <FileSpreadsheet className="w-4 h-4" />
-            </div>
+            <span className="text-[11px] font-bold font-mono uppercase text-slate-400">Live Plans</span>
+            <FileSpreadsheet className="w-5 h-5 text-slate-400" />
           </div>
           <div className="flex items-baseline justify-between">
-            <div className="text-3xl font-bold text-[#0F1B2E] font-mono tabular-nums font-serif">
+            <div className="text-2xl font-bold text-slate-900 font-mono tabular-nums font-serif">
               {loadingProcurements ? '...' : procurements.length}
             </div>
-            <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-mono font-bold rounded-md flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Active
+            <span className="font-bold text-emerald-700 text-xs font-mono flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> Active
             </span>
           </div>
           <div className="text-[11px] text-slate-500 font-mono flex items-center justify-between pt-1">
             <span>Total Tonnage</span>
-            <span className="text-[#0F1B2E] font-bold">1.25M MT</span>
+            <span className="text-slate-900 font-bold">1.25M MT</span>
           </div>
         </div>
       </div>
@@ -275,12 +259,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate }) => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 font-sans">
             {/* Card 1: Key Decision Recommendation */}
-            <div className="card-theme rounded-2xl p-6 shadow-card-soft border border-slate-200 space-y-4">
+            <div className="bg-white rounded-lg p-6 border border-slate-200/90 shadow-[0_4px_16px_rgba(0,0,0,0.03)] space-y-4 hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all duration-200">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold font-mono text-slate-500 uppercase tracking-wider">Top Recommendation</span>
+                <span className="text-[11px] font-bold font-mono text-slate-400 uppercase tracking-wider">Top Recommendation</span>
                 <CharterStampBadge variant="RECOMMENDED" label="6-MONTH COA" />
               </div>
-              <div className="text-base font-bold text-[#0F1B2E] leading-snug font-serif">
+              <div className="text-base font-bold text-slate-900 leading-snug font-serif">
                 Fix 6-Month COA Contract for Australian Coking Coal
               </div>
               <p className="text-xs text-slate-600 leading-relaxed font-sans">
@@ -288,7 +272,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate }) => {
               </p>
               <button
                 onClick={() => onNavigate('/procurement')}
-                className="accept-button-theme w-full flex items-center justify-center space-x-2 text-xs"
+                className="w-full h-10 px-4 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-md shadow-md transition-all cursor-pointer flex items-center justify-center space-x-2"
               >
                 <span>Open Procurement Analysis</span>
                 <ArrowUpRight className="w-4 h-4 text-white" />
@@ -296,10 +280,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate }) => {
             </div>
 
             {/* Card 2: Composite Risk Gauge Signature Element */}
-            <div className="card-theme rounded-2xl p-6 shadow-card-soft border border-slate-200 space-y-3 flex flex-col items-center justify-between">
+            <div className="bg-white rounded-lg p-6 border border-slate-200/90 shadow-[0_4px_16px_rgba(0,0,0,0.03)] space-y-3 flex flex-col items-center justify-between hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all duration-200">
               <div className="w-full flex items-center justify-between">
-                <span className="text-[11px] font-bold font-mono text-slate-500 uppercase tracking-wider">Composite Risk Navigation</span>
-                <Sparkles className="w-4 h-4 text-sky-600" />
+                <span className="text-[11px] font-bold font-mono text-slate-400 uppercase tracking-wider">Composite Risk Navigation</span>
+                <Sparkles className="w-4 h-4 text-blue-600" />
               </div>
               
               <CompassRiskGauge score={55.6} riskLevel="MODERATE" size="md" />
@@ -310,10 +294,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate }) => {
             </div>
 
             {/* Card 3: Tonnage Feasibility */}
-            <div className="card-theme rounded-2xl p-6 shadow-card-soft border border-slate-200 space-y-3 flex flex-col justify-between">
+            <div className="bg-white rounded-lg p-6 border border-slate-200/90 shadow-[0_4px_16px_rgba(0,0,0,0.03)] space-y-3 flex flex-col justify-between hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)] transition-all duration-200">
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold font-mono text-slate-500 uppercase tracking-wider">Port & Vessel Constraints</span>
+                  <span className="text-[11px] font-bold font-mono text-slate-400 uppercase tracking-wider">Port & Vessel Constraints</span>
                   <CharterStampBadge variant="FEASIBLE" label="PANAMAX TONNAGE" />
                 </div>
                 <div className="text-base font-bold text-emerald-700 font-serif">
@@ -324,7 +308,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate }) => {
                 </p>
               </div>
 
-              <div className="pt-3 border-t border-slate-200 flex items-center justify-between text-xs font-mono text-slate-600">
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-mono text-slate-600">
                 <span>Draft Constraint: 14.2m</span>
                 <span className="text-emerald-700 font-bold">Passed ✓</span>
               </div>
@@ -341,12 +325,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate }) => {
 
           {/* 4 System Metric Detail Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="card-theme rounded-2xl p-5 shadow-card-soft border border-slate-200 space-y-2">
+            <div className="bg-white rounded-lg p-5 border border-slate-200/90 shadow-[0_4px_16px_rgba(0,0,0,0.03)] space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold font-mono uppercase text-slate-500">Registered Ports</span>
-                <Anchor className="w-5 h-5 text-sky-600" />
+                <span className="text-[11px] font-bold font-mono uppercase text-slate-400">Registered Ports</span>
+                <Anchor className="w-5 h-5 text-slate-400" />
               </div>
-              <div className="text-3xl font-bold text-[#0F1B2E] font-mono tabular-nums font-serif">
+              <div className="text-2xl font-bold text-slate-900 font-mono tabular-nums font-serif">
                 {loadingPorts ? '...' : ports.length}
               </div>
               <div className="text-[11px] text-emerald-700 font-mono font-bold flex items-center gap-1.5">
@@ -355,12 +339,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate }) => {
               </div>
             </div>
 
-            <div className="card-theme rounded-2xl p-5 shadow-card-soft border border-slate-200 space-y-2">
+            <div className="bg-white rounded-lg p-5 border border-slate-200/90 shadow-[0_4px_16px_rgba(0,0,0,0.03)] space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold font-mono uppercase text-slate-500">Vessel Fleet Classes</span>
-                <Ship className="w-5 h-5 text-sky-600" />
+                <span className="text-[11px] font-bold font-mono uppercase text-slate-400">Vessel Fleet Classes</span>
+                <Ship className="w-5 h-5 text-slate-400" />
               </div>
-              <div className="text-3xl font-bold text-[#0F1B2E] font-mono tabular-nums font-serif">
+              <div className="text-2xl font-bold text-slate-900 font-mono tabular-nums font-serif">
                 {loadingVessels ? '...' : vessels.length}
               </div>
               <div className="text-[11px] text-slate-500 font-mono font-bold">
@@ -368,12 +352,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate }) => {
               </div>
             </div>
 
-            <div className="card-theme rounded-2xl p-5 shadow-card-soft border border-slate-200 space-y-2">
+            <div className="bg-white rounded-lg p-5 border border-slate-200/90 shadow-[0_4px_16px_rgba(0,0,0,0.03)] space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold font-mono uppercase text-slate-500">Procurement Plans</span>
-                <FileSpreadsheet className="w-5 h-5 text-emerald-600" />
+                <span className="text-[11px] font-bold font-mono uppercase text-slate-400">Procurement Plans</span>
+                <FileSpreadsheet className="w-5 h-5 text-slate-400" />
               </div>
-              <div className="text-3xl font-bold text-[#0F1B2E] font-mono tabular-nums font-serif">
+              <div className="text-2xl font-bold text-slate-900 font-mono tabular-nums font-serif">
                 {loadingProcurements ? '...' : procurements.length}
               </div>
               <div className="text-[11px] text-emerald-700 font-mono font-bold">
@@ -381,25 +365,25 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate }) => {
               </div>
             </div>
 
-            <div className="card-theme rounded-2xl p-5 shadow-card-soft border border-slate-200 space-y-2">
+            <div className="bg-white rounded-lg p-5 border border-slate-200/90 shadow-[0_4px_16px_rgba(0,0,0,0.03)] space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold font-mono uppercase text-slate-500">ML Forecast Engine</span>
-                <Database className="w-5 h-5 text-sky-600" />
+                <span className="text-[11px] font-bold font-mono uppercase text-slate-400">ML Forecast Engine</span>
+                <Database className="w-5 h-5 text-slate-400" />
               </div>
-              <div className="text-2xl font-bold text-[#0F1B2E] font-mono uppercase font-serif">
+              <div className="text-xl font-bold text-slate-900 font-mono uppercase font-serif">
                 XGBoost
               </div>
-              <div className="text-[11px] text-sky-700 font-mono font-bold">
+              <div className="text-[11px] text-blue-700 font-mono font-bold">
                 FastAPI Python Solvers
               </div>
             </div>
           </div>
 
           {/* EAST COAST PORT CLEARANCE & DRAFT MATRIX */}
-          <div className="card-theme rounded-2xl p-6 shadow-card-soft border border-slate-200 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-              <h2 className="text-sm font-bold text-[#0F1B2E] flex items-center gap-2 font-serif">
-                <Anchor className="w-4 h-4 text-sky-600" />
+          <div className="bg-white rounded-lg p-6 border border-slate-200/90 shadow-[0_4px_16px_rgba(0,0,0,0.03)] space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2 font-serif">
+                <Anchor className="w-4 h-4 text-blue-600" />
                 <span>East Coast Discharge Port Physical Constraints Matrix</span>
               </h2>
               <span className="text-xs font-mono text-slate-500">Channel Depth & Max LOA Limits</span>

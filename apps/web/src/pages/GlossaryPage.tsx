@@ -22,26 +22,26 @@ export const GlossaryPage: React.FC = () => {
       <Breadcrumbs activePath="/glossary" onNavigate={() => {}} />
 
       {/* Header */}
-      <div className="bg-white border border-[#0F1B2E]/10 rounded-xl p-5 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="card-theme bg-white p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-[#0F1B2E] flex items-center gap-2 font-serif">
-            <BookOpen className="w-5 h-5 text-[#A9793A]" />
+          <h1 className="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2 font-sans">
+            <BookOpen className="w-5 h-5 text-amber-600" />
             <span>Maritime Shipping & Analytics Glossary</span>
           </h1>
-          <p className="text-xs text-[#3E5871] font-mono mt-0.5">
+          <p className="text-xs text-slate-500 font-mono mt-0.5">
             Single Source of Truth for Shipping, Port Constraints & ML Analytics Terminology
           </p>
         </div>
 
         <div className="w-full md:w-80">
           <div className="inputForm">
-            <Search className="w-4 h-4 text-[#3E5871]" />
+            <Search className="w-4 h-4 text-slate-400" />
             <input
               type="text"
               placeholder="Search term, abbreviation, definition..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="input"
+              className="input font-sans text-xs text-slate-900"
             />
           </div>
         </div>
@@ -53,10 +53,10 @@ export const GlossaryPage: React.FC = () => {
           <button
             key={cat}
             onClick={() => setSelectedCategory(cat)}
-            className={`px-3 py-1.5 rounded font-bold transition-all cursor-pointer ${
+            className={`px-3.5 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
               selectedCategory === cat
-                ? 'bg-[#0F1B2E] text-white shadow-xs'
-                : 'bg-white border border-[#0F1B2E]/10 text-[#3E5871] hover:bg-[#FAFAF8]'
+                ? 'bg-slate-900 text-white shadow-md'
+                : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'
             }`}
           >
             {cat}
@@ -67,26 +67,26 @@ export const GlossaryPage: React.FC = () => {
       {/* Glossary Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {filtered.map((item) => (
-          <div key={item.id} className="bg-white border border-[#0F1B2E]/10 rounded-xl p-5 shadow-xs space-y-2">
+          <div key={item.id} className="card-theme bg-white p-5 space-y-2">
             <div className="flex items-center justify-between">
-              <span className="font-bold text-[#0F1B2E] font-serif text-sm flex items-center gap-2">
+              <span className="font-bold text-slate-900 font-sans text-sm flex items-center gap-2">
                 <span>{item.term}</span>
                 {item.abbreviation && (
-                  <span className="px-2 py-0.5 bg-[#FAF4EB] text-[#A9793A] border border-[#A9793A]/30 text-[10px] font-mono rounded font-bold">
-                    {item.abbreviation}
+                  <span className="text-xs font-mono font-bold text-amber-700">
+                    ({item.abbreviation})
                   </span>
                 )}
               </span>
-              <span className="px-2 py-0.5 bg-[#FAFAF8] text-[#3E5871] text-[9px] font-mono rounded font-bold uppercase border border-[#0F1B2E]/10">
-                {item.category}
+              <span className="text-[10px] font-mono font-bold text-slate-500 uppercase">
+                • {item.category}
               </span>
             </div>
 
-            <div className="text-xs text-[#0F1B2E] font-semibold font-sans leading-relaxed">
+            <div className="text-xs text-slate-900 font-semibold font-sans leading-relaxed">
               {item.shortDefinition}
             </div>
 
-            <p className="text-xs text-[#3E5871] leading-relaxed font-sans pt-1 border-t border-[#0F1B2E]/10">
+            <p className="text-xs text-slate-500 leading-relaxed font-sans pt-2 border-t border-slate-100">
               {item.fullExplanation}
             </p>
           </div>
