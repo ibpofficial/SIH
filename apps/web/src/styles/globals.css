@@ -7,17 +7,22 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-    background-color: #FAFAF8;
-    color: #0F1B2E;
+    background-color: #FFFFFF;
+    color: #1F2937;
+    scroll-behavior: smooth;
   }
 
   body {
-    @apply bg-[#FAFAF8] text-[#0F1B2E] font-sans antialiased overflow-x-hidden selection:bg-sky-500/20 selection:text-sky-900;
+    @apply bg-white text-slate-700 font-sans antialiased overflow-x-hidden selection:bg-blue-500/20 selection:text-blue-900;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11", "ss01", "ss03";
+    letter-spacing: -0.011em;
+    line-height: 1.55;
+    background-color: #FFFFFF;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-serif tracking-tight text-[#0F1B2E];
+    @apply font-display tracking-tight text-slate-900 font-semibold;
+    letter-spacing: -0.02em;
   }
 
   /* Crisp Light Scrollbar */
@@ -27,7 +32,7 @@
   }
 
   ::-webkit-scrollbar-track {
-    background: #FAFAF8;
+    background: #FFFFFF;
   }
 
   ::-webkit-scrollbar-thumb {
@@ -36,7 +41,7 @@
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #0284C7;
+    background: #3B82F6;
   }
 }
 
@@ -44,75 +49,110 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Crisp White Card Design System */
-.card-theme {
-  background-color: #FFFFFF;
+/* Uiverse Inspired Clean Square-Box Design System */
+.card-theme, .uiverse-card {
   border: 1px solid #E2E8F0;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  border-radius: 0.75rem;
+  background-color: #FFFFFF;
+  padding: 1.25rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+  transition: box-shadow 0.2s ease, transform 0.15s ease;
 }
 
-.accept-button-theme {
-  height: 38px;
-  padding: 0 18px;
-  background-color: #0F1B2E;
-  transition: all 0.2s ease-in-out;
-  border: none;
-  color: #FFFFFF;
-  cursor: pointer;
-  font-weight: 700;
-  border-radius: 10px;
+.card-theme:hover, .uiverse-card:hover {
+  border-color: #CBD5E1;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.03);
 }
 
-.accept-button-theme:hover {
-  background-color: #0284C7;
-  box-shadow: 0 0 15px rgba(2, 132, 199, 0.3);
+/* Circular Icon Badge Pattern */
+.uiverse-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background-color: rgba(96, 165, 250, 1);
+  padding: 0.5rem;
+  color: rgba(255, 255, 255, 1);
 }
 
-.decline-button-theme {
-  height: 38px;
-  padding: 0 18px;
-  background-color: #F1F5F9;
-  transition: all 0.2s ease-in-out;
-  color: #334155;
-  border: 1px solid #CBD5E1;
-  cursor: pointer;
+.uiverse-icon svg {
+  height: 1rem;
+  width: 1rem;
+}
+
+/* Primary Action Button (.read pattern) */
+.accept-button-theme, .read {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  text-align: center;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
   font-weight: 600;
-  border-radius: 10px;
+  background-color: rgba(59, 130, 246, 1);
+  color: rgba(255, 255, 255, 1);
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
 }
 
-.decline-button-theme:hover {
-  background-color: #E2E8F0;
-  border-color: #0284C7;
-  color: #0284C7;
+.accept-button-theme:hover, .read:hover {
+  background-color: rgba(37, 99, 235, 1);
 }
 
-/* FORM REFERENCE PATTERN COMPONENTS (50px height, 10-20px radius, focus-within glow) */
+/* Secondary Button (.mark-as-read pattern) */
+.decline-button-theme, .mark-as-read {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  text-align: center;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 600;
+  background-color: rgba(249, 250, 251, 1);
+  color: rgba(107, 114, 128, 1);
+  border: 1px solid rgba(229, 231, 235, 1);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.decline-button-theme:hover, .mark-as-read:hover {
+  background-color: rgb(230, 231, 233);
+  color: rgba(55, 65, 81, 1);
+}
+
+/* FORM REFERENCE PATTERN COMPONENTS */
 .form-container {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
   background-color: #FFFFFF;
-  padding: 28px;
-  border-radius: 20px;
-  border: 1.5px solid #E2E8F0;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+  padding: 24px;
+  border-radius: 1rem;
+  border: 1px solid rgba(219, 234, 254, 1);
 }
 
 .inputForm {
-  border: 1.5px solid #ECEDEC;
-  border-radius: 10px;
-  height: 50px;
+  border: 1px solid rgba(219, 234, 254, 1);
+  border-radius: 0.5rem;
+  height: 46px;
   display: flex;
   align-items: center;
   padding-left: 12px;
   padding-right: 12px;
   background-color: #FFFFFF;
-  transition: all 0.2s ease-in-out;
+  transition: border-color 0.15s ease;
 }
 
 .inputForm:focus-within {
-  border: 1.5px solid #0284C7;
-  box-shadow: 0 0 12px rgba(2, 132, 199, 0.25);
+  border-color: rgba(59, 130, 246, 1);
 }
 
 .input {
@@ -121,7 +161,7 @@
   background: transparent;
   width: 100%;
   height: 100%;
-  color: #0F1B2E;
+  color: #1F2937;
   font-size: 14px;
 }
 
@@ -130,21 +170,20 @@
 }
 
 .input::placeholder {
-  color: #94A3B8;
+  color: #9CA3AF;
 }
 
 .button-submit {
-  margin: 16px 0 10px 0;
-  background-color: #0F1B2E;
+  background-color: rgba(59, 130, 246, 1);
   border: none;
   color: #FFFFFF;
-  font-size: 15px;
-  font-weight: 700;
-  border-radius: 10px;
-  height: 50px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  height: 46px;
   width: 100%;
   cursor: pointer;
-  transition: all 0.2s ease-in-out;
+  transition: background-color 0.15s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -152,47 +191,44 @@
 }
 
 .button-submit:hover {
-  background-color: #0284C7;
-  box-shadow: 0 0 18px rgba(2, 132, 199, 0.35);
+  background-color: rgba(37, 99, 235, 1);
 }
 
 .btn-outline {
-  margin-top: 8px;
   width: 100%;
-  height: 50px;
-  border-radius: 10px;
+  height: 46px;
+  border-radius: 0.5rem;
   display: flex;
   justify-content: center;
   align-items: center;
   font-weight: 600;
   gap: 10px;
-  border: 1px solid #EDEDEF;
-  background-color: #FFFFFF;
-  color: #0F1B2E;
+  border: 1px solid rgba(229, 231, 235, 1);
+  background-color: rgba(249, 250, 251, 1);
+  color: rgba(107, 114, 128, 1);
   cursor: pointer;
-  transition: all 0.2s ease-in-out;
+  transition: all 0.15s ease;
 }
 
 .btn-outline:hover {
-  border: 1px solid #0284C7;
-  color: #0284C7;
-  background-color: #F0F9FF;
+  background-color: rgb(230, 231, 233);
+  color: rgba(55, 65, 81, 1);
 }
 
 /* Institutional White Terminal Primitives */
 .instrument-card {
   background: #FFFFFF;
-  border: 1px solid #E2E8F0;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-  transition: border-color 0.2s ease;
+  border: 1px solid rgba(219, 234, 254, 1);
+  border-radius: 1rem;
+  transition: border-color 0.15s ease;
 }
 
 .instrument-card:hover {
-  border-color: #0284C7;
+  border-color: rgba(147, 197, 253, 1);
 }
 
 .hairline-divider {
-  border-bottom: 1px solid #E2E8F0;
+  border-bottom: 1px solid rgba(219, 234, 254, 1);
 }
 
 /* Formal Charter-Party Document Stamp Badges */
@@ -202,13 +238,12 @@
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  padding: 2px 8px;
-  border-radius: 4px;
+  padding: 3px 10px;
+  border-radius: 6px;
   border: 1px solid currentColor;
-  box-shadow: inset 0 0 0 1px currentColor;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
 }
 
 .stamp-badge-brass {
@@ -235,7 +270,6 @@
   border-color: #FDE68A;
 }
 
-/* Standardized print CSS for executive memos */
 @media print {
   body {
     background-color: #FFFFFF !important;
@@ -245,3 +279,5 @@
     display: none !important;
   }
 }
+
+

@@ -9,6 +9,7 @@ import { VesselsPage } from './pages/VesselsPage';
 import { ProcurementPage } from './pages/ProcurementPage';
 import { DataIngestionPage } from './pages/DataIngestionPage';
 import { ArchitecturePage } from './pages/ArchitecturePage';
+import { AboutPage } from './pages/AboutPage';
 import { RoadmapPage } from './pages/RoadmapPage';
 import { GlossaryPage } from './pages/GlossaryPage';
 import { AuditPage } from './pages/AuditPage';
@@ -36,6 +37,8 @@ export const App: React.FC = () => {
     switch (activePath) {
       case '/':
         return <DashboardPage onNavigate={setActivePath} />;
+      case '/about':
+        return <AboutPage onNavigate={setActivePath} />;
       case '/ports':
         return <PortsPage />;
       case '/vessels':

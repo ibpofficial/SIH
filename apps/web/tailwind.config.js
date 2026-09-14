@@ -79,10 +79,10 @@ export default {
         }
       },
       fontFamily: {
-        serif: ['"Fraunces"', '"Newsreader"', 'Georgia', 'serif'],
-        display: ['"Fraunces"', '"Newsreader"', 'Georgia', 'serif'],
-        sans: ['"IBM Plex Sans"', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        mono: ['"JetBrains Mono"', '"IBM Plex Mono"', 'Consolas', 'monospace'],
+        serif: ['"Plus Jakarta Sans"', '"Inter"', 'system-ui', 'sans-serif'],
+        display: ['"Plus Jakarta Sans"', '"Inter"', 'system-ui', 'sans-serif'],
+        sans: ['"Inter"', '"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'Consolas', 'monospace'],
       },
       boxShadow: {
         'card-soft': '0 4px 20px rgba(0, 0, 0, 0.06)',

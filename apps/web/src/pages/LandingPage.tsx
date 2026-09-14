@@ -11,6 +11,7 @@ import {
   Award
 } from 'lucide-react';
 import { CookieConsentCard } from '../components/ui/CookieConsentCard';
+import { FreightIQLogo } from '../components/ui/FreightIQLogo';
 
 interface LandingPageProps {
   onStartDemo: () => void;
@@ -18,22 +19,20 @@ interface LandingPageProps {
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onStartDemo }) => {
   return (
-    <div className="min-h-screen bg-[#FAFAF8] text-[#0F1B2E] font-sans flex flex-col justify-between selection:bg-[#7b57ff]/20 selection:text-[#0F1B2E] relative">
+    <div className="min-h-screen bg-white text-slate-800 font-sans flex flex-col justify-between selection:bg-blue-500/20 selection:text-blue-900 relative">
       {/* Header */}
-      <header className="h-16 bg-white border-b border-[#0F1B2E]/10 px-6 md:px-12 flex items-center justify-between sticky top-0 z-40 shadow-xs">
-        <div className="flex items-center space-x-3 cursor-pointer" onClick={onStartDemo}>
-          <div className="w-9 h-9 rounded-xl bg-[#7b57ff] text-white font-serif font-extrabold text-sm flex items-center justify-center shadow-xs">
-            FIQ
-          </div>
+      <header className="h-16 bg-white border-b border-blue-100 px-6 md:px-12 flex items-center justify-between sticky top-0 z-40">
+        <div className="flex items-center space-x-2.5 cursor-pointer group" onClick={onStartDemo}>
+          <FreightIQLogo size={32} className="text-slate-900 transition-transform group-hover:scale-105" />
           <div>
             <div className="flex items-center space-x-2">
-              <span className="font-extrabold text-[#0F1B2E] tracking-tight text-base font-serif">FreightIQ</span>
-              <span className="px-3 py-0.5 bg-[#7b57ff]/10 text-[#7b57ff] border border-[#7b57ff]/30 text-[10px] font-bold rounded-full flex items-center gap-1.5 font-mono">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#7b57ff]" />
-                <span>SIH26006 • MARITIME INSTRUMENT</span>
+              <span className="font-extrabold text-slate-900 tracking-tight text-base font-serif">FreightIQ</span>
+              <span className="px-2.5 py-0.5 bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-bold rounded-md flex items-center gap-1.5 font-mono">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                <span>SIH26006 • MARITIME SUITE</span>
               </span>
             </div>
-            <p className="text-[10px] text-[#3E5871] font-mono">Steel Ministry Chartering & Decision Suite</p>
+            <p className="text-[10px] text-slate-500 font-mono">Steel Ministry Chartering Desk & Decision Engine</p>
           </div>
         </div>
 
