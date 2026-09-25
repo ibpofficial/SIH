@@ -143,15 +143,86 @@ export const ProcurementPage: React.FC<{ onNavigate?: (path: string) => void }> 
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
+  // Local State fallback & created plans
+  const [localRequests, setLocalRequests] = useState<any[]>([]);
+
   useEffect(() => {
     seedFirestoreIfEmpty();
   }, []);
 
+  // Pre-select default ports when ports list is loaded
   useEffect(() => {
-    if (requests && requests.length > 0 && !selectedPlan) {
-      setSelectedPlan(requests[0]);
+    if (ports && ports.length > 0) {
+      if (!originPortId) {
+        const orig = ports.find((p) => p.type === 'ORIGIN' || p.id.includes('newcastle')) || ports[0];
+        if (orig) setOriginPortId(orig.id);
+      }
+      if (!destinationPortId) {
+        const dest = ports.find((p) => p.type === 'DESTINATION' || p.id.includes('paradip')) || ports[1] || ports[0];
+        if (dest) setDestinationPortId(dest.id);
+      }
     }
-  }, [requests]);
+  }, [ports]);
+
+  const DEFAULT_MOCK_REQUESTS = [
+    {
+      id: 'req-hero-coking-coal',
+      commodity: 'Australian Blast Furnace Coking Coal (SAIL Primary)',
+      quantityMt: 200000,
+      originPortId: 'port-newcastle',
+      originPortName: 'Newcastle Coal Terminal (AU)',
+      destinationPortId: 'port-paradip',
+      destinationPortName: 'Paradip Port (IN)',
+      requiredDeliveryDate: '2026-12-15',
+      budgetInrCrore: 185.0,
+      fuelType: 'VLSFO ($640/MT)',
+      status: 'OPTIMIZED',
+      notes: 'Primary 200,000 MT Coking Coal stem for SAIL steel plant blast furnaces.',
+      orgId: 'sail-org-id',
+      createdAt: new Date().toISOString()
+    },
+    {
+      id: 'req-ntpc-thermal-coal',
+      commodity: 'South African High-CV Thermal Coal (NTPC Power)',
+      quantityMt: 150000,
+      originPortId: 'port-richardsbay',
+      originPortName: 'Richards Bay Coal Terminal (ZA)',
+      destinationPortId: 'port-vizag',
+      destinationPortName: 'Visakhapatnam Port (IN)',
+      requiredDeliveryDate: '2026-11-20',
+      budgetInrCrore: 135.0,
+      fuelType: 'VLSFO ($640/MT)',
+      status: 'DRAFT',
+      notes: 'Thermal coal stem for NTPC coastal power plant generation.',
+      orgId: 'ntpc-org-id',
+      createdAt: new Date().toISOString()
+    },
+    {
+      id: 'req-tata-iron-ore',
+      commodity: 'Odisha Iron Ore Fines (+62% Fe Grade)',
+      quantityMt: 180000,
+      originPortId: 'port-dhamra',
+      originPortName: 'Dhamra Port (IN)',
+      destinationPortId: 'port-haldia',
+      destinationPortName: 'Kolkata / Haldia Dock (IN)',
+      requiredDeliveryDate: '2026-12-01',
+      budgetInrCrore: 110.0,
+      fuelType: 'MGO ($890/MT)',
+      status: 'DRAFT',
+      notes: 'Coastal iron ore movement for Tata Steel blast furnace feed.',
+      orgId: 'tata-org-id',
+      createdAt: new Date().toISOString()
+    }
+  ];
+
+  const displayRequests = [...localRequests, ...(requests || [])];
+  const activeRequests = displayRequests.length > 0 ? displayRequests : DEFAULT_MOCK_REQUESTS;
+
+  useEffect(() => {
+    if (activeRequests.length > 0 && !selectedPlan) {
+      setSelectedPlan(activeRequests[0]);
+    }
+  }, [activeRequests]);
 
   const handleToggleViewMode = (mode: 'SIMPLE' | 'ADVANCED') => {
     setViewMode(mode);
@@ -165,39 +236,52 @@ export const ProcurementPage: React.FC<{ onNavigate?: (path: string) => void }> 
 
     try {
       const newId = `req-${Date.now()}`;
-      const originObj = ports.find((p) => p.id === originPortId) || { name: 'Newcastle AU' };
-      const destObj = ports.find((p) => p.id === destinationPortId) || { name: 'Paradip IN' };
+      const originObj = ports.find((p) => p.id === originPortId) || { name: 'Newcastle Coal Terminal (AU)' };
+      const destObj = ports.find((p) => p.id === destinationPortId) || { name: 'Paradip Port (IN)' };
 
-      await setDoc(doc(db, 'procurementRequests', newId), {
+      const newPlan = {
         id: newId,
         commodity,
-        quantityMt: parseFloat(quantityMt),
-        originPortId,
+        quantityMt: parseFloat(quantityMt) || 180000,
+        originPortId: originPortId || 'port-newcastle',
         originPortName: originObj.name,
-        destinationPortId,
+        destinationPortId: destinationPortId || 'port-paradip',
         destinationPortName: destObj.name,
         fuelType,
         requiredDeliveryDate: deliveryDate,
-        budgetInrCrore: parseFloat(budgetCrore),
+        budgetInrCrore: parseFloat(budgetCrore) || 165.0,
         incoterm,
-        targetFreightCeilingUsd: parseFloat(targetFreightCeilingUsd),
-        ashContentPct: parseFloat(ashContentPct),
-        volatileMatterPct: parseFloat(volatileMatterPct),
-        csrRating: parseFloat(csrRating),
-        dischargeRateTpd: parseFloat(dischargeRateTpd),
-        demurrageRateUsdDay: parseFloat(demurrageRateUsdDay),
-        maxVesselAgeYears: parseInt(maxVesselAgeYears, 10),
+        targetFreightCeilingUsd: parseFloat(targetFreightCeilingUsd) || 28.50,
+        ashContentPct: parseFloat(ashContentPct) || 9.5,
+        volatileMatterPct: parseFloat(volatileMatterPct) || 21.0,
+        csrRating: parseFloat(csrRating) || 68.0,
+        dischargeRateTpd: parseFloat(dischargeRateTpd) || 45000,
+        demurrageRateUsdDay: parseFloat(demurrageRateUsdDay) || 15000,
+        maxVesselAgeYears: parseInt(maxVesselAgeYears, 10) || 15,
         esgCiiGrade,
         notes,
         status: 'DRAFT',
         orgId: 'sail-org-id',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
-      });
+      };
 
+      try {
+        await setDoc(doc(db, 'procurementRequests', newId), newPlan);
+      } catch (fErr) {
+        console.warn('Firestore write warning, using local state:', fErr);
+      }
+
+      setLocalRequests((prev) => [newPlan, ...prev]);
+      setSelectedPlan(newPlan);
       setIsModalOpen(false);
+
+      // Auto-trigger analysis for the newly created plan
+      setTimeout(() => {
+        handleTriggerAnalysis(newPlan);
+      }, 100);
     } catch (err: any) {
-      setFormError(err.message || 'Failed to create procurement plan in Firestore');
+      setFormError(err.message || 'Failed to create procurement plan');
     } finally {
       setSubmitting(false);
     }
@@ -601,20 +685,20 @@ export const ProcurementPage: React.FC<{ onNavigate?: (path: string) => void }> 
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
-              {requestsLoading ? (
+              {requestsLoading && activeRequests.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="py-6 text-center text-slate-500 font-mono">
                     Connecting live Firestore stream...
                   </td>
                 </tr>
-              ) : requests.length === 0 ? (
+              ) : activeRequests.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="py-6 text-center text-slate-500 font-mono">
-                    No procurement plans in Firestore. Click "New Procurement Plan" to create one.
+                    No procurement plans found. Click "New Procurement Plan" to create one.
                   </td>
                 </tr>
               ) : (
-                requests.map((req) => {
+                activeRequests.map((req) => {
                   const isSelected = selectedPlan?.id === req.id;
                   const isRunning = analyzingId === req.id;
                   return (
