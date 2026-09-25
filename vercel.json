@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "buildCommand": "pnpm --filter @freightiq/shared-types build && pnpm --filter freightiq-web build",
-  "outputDirectory": "apps/web/dist",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
   "framework": "vite",
   "rewrites": [
     {
