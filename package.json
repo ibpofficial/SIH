@@ -2,6 +2,9 @@
   "name": "freightiq-monorepo",
   "version": "1.0.0",
   "private": true,
+  "prisma": {
+    "schema": "apps/api/prisma/schema.prisma"
+  },
   "scripts": {
     "dev": "npm --prefix apps/web run dev",
     "dev:all": "pnpm --parallel --filter \"./apps/*\" dev",
